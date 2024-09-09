@@ -6,7 +6,6 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.common.exception.DuplicateDataException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 
 import java.util.List;
@@ -26,9 +25,6 @@ public class UserServiceImpl implements UserService {
     public User createUser(final User user) {
         Objects.requireNonNull(user, "Cannot create user: is null");
         validate(user);
-        repository.findByEmail(user.getEmail()).ifPresent(u -> {
-            throw new DuplicateDataException("Email already in use");
-        });
         final User createdUser = repository.save(user);
         log.info("Created user with id = {}: {}", createdUser.getId(), createdUser);
         return createdUser;
@@ -55,11 +51,6 @@ public class UserServiceImpl implements UserService {
         Optional.ofNullable(update.getName()).ifPresent(user::setName);
         Optional.ofNullable(update.getEmail()).ifPresent(user::setEmail);
         validate(user);
-        repository.findByEmail(user.getEmail())
-                .filter(u -> !Objects.equals(id, u.getId()))
-                .ifPresent(u -> {
-                    throw new DuplicateDataException("Email already in use");
-                });
         final User updatedUser = repository.update(user);
         log.info("Updated user with id = {}: {}", id, updatedUser);
         return updatedUser;

@@ -30,17 +30,15 @@ public class BaseRepository<T> {
         final T copy = copier.copy(entity);
         lastUsedId++;
         idSetter.accept(copy, lastUsedId);
-        data.put(lastUsedId, copy);
-        return copier.copy(copy);
+        return persist(lastUsedId, copy);
     }
 
     public Optional<T> findById(final long id) {
-        return Optional.ofNullable(data.get(id)).map(copier::copy);
+        return Optional.ofNullable(data.get(id));
     }
 
     public List<T> findAll() {
         return data.values().stream()
-                .map(copier::copy)
                 .toList();
     }
 
@@ -50,11 +48,15 @@ public class BaseRepository<T> {
         Objects.requireNonNull(id, "Cannot update entity: entity id is null");
         Objects.requireNonNull(data.get(id), "Cannot update entity: unknown id (%s)".formatted(id));
         final T copy = copier.copy(entity);
-        data.put(id, copy);
-        return copier.copy(copy);
+        return persist(id, copy);
     }
 
     public boolean delete(final long id) {
-        return data.remove(id) == null;
+        return data.remove(id) != null;
+    }
+
+    protected T persist(final long id, final T entity) {
+        data.put(id, entity);
+        return entity;
     }
 }
