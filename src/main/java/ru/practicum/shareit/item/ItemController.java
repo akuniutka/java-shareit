@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.shareit.common.BaseController;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.NewItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
@@ -22,7 +24,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-public class ItemController {
+public class ItemController extends BaseController {
 
     private final ItemService itemService;
     private final ItemMapper mapper;
@@ -30,38 +32,48 @@ public class ItemController {
     @PostMapping
     public ItemDto createItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @RequestBody final NewItemDto newItemDto) {
-        log.info("Received POST as /items: {} (X-Sharer-User-Id: {})", newItemDto, userId);
+            @RequestBody final NewItemDto newItemDto,
+            final HttpServletRequest request
+    ) {
+        logRequest(request, newItemDto);
         final Item item = mapper.mapToItem(newItemDto);
         final ItemDto dto = mapper.mapToDto(itemService.createItem(item, userId));
-        log.info("Responded to POST /items: {}", dto);
+        logResponse(request, dto);
         return dto;
     }
 
     @GetMapping("/{id}")
     public ItemDto getUser(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @PathVariable final long id) {
-        log.info("Received GET at /items/{} (X-Sharer-User-Id: {})", id, userId);
+            @PathVariable final long id,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
         final ItemDto dto = mapper.mapToDto(itemService.getItem(id, userId));
-        log.info("Responded to GET /items/{}: {}", id, dto);
+        logResponse(request, dto);
         return dto;
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") final long userId) {
-        log.info("Received GET at /items (X-Sharer-User-Id: {})", userId);
+    public List<ItemDto> getItems(
+            @RequestHeader("X-Sharer-User-Id") final long userId,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
         final List<ItemDto> dtos = mapper.mapToDto(itemService.getItems(userId));
-        log.info("Responded to GET /items: {}", dtos);
+        logResponse(request, dtos);
         return dtos;
     }
 
     @GetMapping("/search")
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") final long userId,
-            @RequestParam final String text) {
-        log.info("Received GET at /items/search?text={} (X-Sharer-User-Id: {})", text, userId);
+    public List<ItemDto> getItems(
+            @RequestHeader("X-Sharer-User-Id") final long userId,
+            @RequestParam final String text,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
         final List<ItemDto> dtos = mapper.mapToDto(itemService.getItems(text, userId));
-        log.info("Responded to GET /items/search?text={} : {}", text, dtos);
+        logResponse(request, dtos);
         return dtos;
     }
 
@@ -69,19 +81,24 @@ public class ItemController {
     public ItemDto updateItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
-            @RequestBody final UpdateItemDto updateItemDto) {
-        log.info("Received PATCH at /items/{}: {} (X-Sharer-User-Id: {})", id, updateItemDto, userId);
+            @RequestBody final UpdateItemDto updateItemDto,
+            final HttpServletRequest request
+    ) {
+        logRequest(request, updateItemDto);
         final Item item = mapper.mapToItem(updateItemDto);
         final ItemDto dto = mapper.mapToDto(itemService.updateItem(id, item, userId));
-        log.info("Responded to PATCH /items/{}: {}", id, dto);
+        logResponse(request, dto);
         return dto;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteItem(@RequestHeader("X-Sharer-User-Id") final long userId,
-            @PathVariable final long id) {
-        log.info("Received DELETE at /items/{} (X-Sharer-User-Id: {})", id, userId);
+    public void deleteItem(
+            @RequestHeader("X-Sharer-User-Id") final long userId,
+            @PathVariable final long id,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
         itemService.deleteItem(id, userId);
-        log.info("Responded to DELETE /items/{} with no body", id);
+        logResponse(request);
     }
 }
