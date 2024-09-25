@@ -1,5 +1,7 @@
 package ru.practicum.shareit.common;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,37 +14,69 @@ import ru.practicum.shareit.common.exception.NotFoundException;
 
 @RestControllerAdvice
 @Slf4j
-public class ControllerExceptionHandler {
+public class ControllerExceptionHandler extends BaseController {
 
     @ExceptionHandler
-    public ProblemDetail handleNotFoundException(final NotFoundException exception) {
-        log.warn(exception.getModelName());
+    public ProblemDetail handleNotFoundException(
+            final NotFoundException exception,
+            final HttpServletRequest request
+    ) {
+        log.warn("Model '{}' with id = {} not found", exception.getModelName(), exception.getModelId());
         final String detail = "Check that id of %s is correct (you sent %s)".formatted(exception.getModelName(),
                 exception.getModelId());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, detail);
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, detail);
+        logResponse(request, response);
+        return response;
     }
 
     @ExceptionHandler
-    public ProblemDetail handleConstraintViolationException(ConstraintViolationException exception) {
+    public ProblemDetail handleConstraintViolationException(
+            final ConstraintViolationException exception,
+            final HttpServletRequest request
+    ) {
+        final String model = exception.getConstraintViolations().stream()
+                .findFirst()
+                .map(ConstraintViolation::getRootBeanClass)
+                .map(Class::getSimpleName)
+                .map(String::toLowerCase)
+                .orElse("<unknown>");
+        log.warn("Validation error on model '{}' - {}", model, exception.getMessage());
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        logResponse(request, response);
+        return response;
+    }
+
+    @ExceptionHandler
+    public ProblemDetail handleDuplicateDataException(
+            final DuplicateDataException exception,
+            final HttpServletRequest request
+    ) {
         log.warn(exception.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+        logResponse(request, response);
+        return response;
     }
 
     @ExceptionHandler
-    public ProblemDetail handleDuplicateDataException(DuplicateDataException exception) {
+    public ProblemDetail handleActionNotAllowedException(
+            final ActionNotAllowedException exception,
+            final HttpServletRequest request
+    ) {
         log.warn(exception.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, exception.getMessage());
+        logResponse(request, response);
+        return response;
     }
 
     @ExceptionHandler
-    public ProblemDetail handleActionNotAllowedException(ActionNotAllowedException exception) {
-        log.warn(exception.getMessage());
-        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, exception.getMessage());
-    }
-
-    @ExceptionHandler
-    public ProblemDetail handleThrowable(Throwable throwable) {
+    public ProblemDetail handleThrowable(
+            final Throwable throwable,
+            final HttpServletRequest request
+    ) {
         log.error(throwable.getMessage(), throwable);
-        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Please contact site admin");
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Please contact site admin");
+        logResponse(request, response);
+        return response;
     }
 }
