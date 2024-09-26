@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.common.BaseController;
-import ru.practicum.shareit.user.dto.NewUserDto;
-import ru.practicum.shareit.user.dto.UpdateUserDto;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 
@@ -22,53 +19,53 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController extends BaseController {
+class UserController extends BaseController {
 
     private final UserService userService;
     private final UserMapper mapper;
 
     @PostMapping
-    public UserDto createUser(
-            @RequestBody final NewUserDto newUserDto,
+    public UserRetrieveDto createUser(
+            @RequestBody final UserCreateDto userCreateDto,
             final HttpServletRequest request
     ) {
-        logRequest(request, newUserDto);
-        final User user = mapper.mapToUser(newUserDto);
-        final UserDto dto = mapper.mapToDto(userService.createUser(user));
+        logRequest(request, userCreateDto);
+        final User user = mapper.mapToUser(userCreateDto);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.createUser(user));
         logResponse(request, dto);
         return dto;
     }
 
     @GetMapping("/{id}")
-    public UserDto getUser(
+    public UserRetrieveDto getUser(
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final UserDto dto = mapper.mapToDto(userService.getUser(id));
+        final UserRetrieveDto dto = mapper.mapToDto(userService.getUser(id));
         logResponse(request, dto);
         return dto;
     }
 
     @GetMapping
-    public List<UserDto> getUsers(
+    public List<UserRetrieveDto> getUsers(
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<UserDto> dtos = mapper.mapToDto(userService.getAllUsers());
+        final List<UserRetrieveDto> dtos = mapper.mapToDto(userService.getAllUsers());
         logResponse(request, dtos);
         return dtos;
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateUser(
+    public UserRetrieveDto updateUser(
             @PathVariable final long id,
-            @RequestBody final UpdateUserDto updateUserDto,
+            @RequestBody final UserUpdateDto userUpdateDto,
             final HttpServletRequest request
     ) {
-        logRequest(request, updateUserDto);
-        final User user = mapper.mapToUser(updateUserDto);
-        final UserDto dto = mapper.mapToDto(userService.updateUser(id, user));
+        logRequest(request, userUpdateDto);
+        final User user = mapper.mapToUser(userUpdateDto);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.updateUser(id, user));
         logResponse(request, dto);
         return dto;
     }

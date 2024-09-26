@@ -14,9 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.common.BaseController;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.NewItemDto;
-import ru.practicum.shareit.item.dto.UpdateItemDto;
 
 import java.util.List;
 
@@ -24,69 +21,69 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-public class ItemController extends BaseController {
+class ItemController extends BaseController {
 
     private final ItemService itemService;
     private final ItemMapper mapper;
 
     @PostMapping
-    public ItemDto createItem(
+    public ItemRetrieveDto createItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @RequestBody final NewItemDto newItemDto,
+            @RequestBody final ItemCreateDto itemCreateDto,
             final HttpServletRequest request
     ) {
-        logRequest(request, newItemDto);
-        final Item item = mapper.mapToItem(newItemDto);
-        final ItemDto dto = mapper.mapToDto(itemService.createItem(item, userId));
+        logRequest(request, itemCreateDto);
+        final Item item = mapper.mapToItem(itemCreateDto);
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.createItem(item, userId));
         logResponse(request, dto);
         return dto;
     }
 
     @GetMapping("/{id}")
-    public ItemDto getUser(
+    public ItemRetrieveDto getUser(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ItemDto dto = mapper.mapToDto(itemService.getItem(id, userId));
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id, userId));
         logResponse(request, dto);
         return dto;
     }
 
     @GetMapping
-    public List<ItemDto> getItems(
+    public List<ItemRetrieveDto> getItems(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemDto> dtos = mapper.mapToDto(itemService.getItems(userId));
+        final List<ItemRetrieveDto> dtos = mapper.mapToDto(itemService.getItems(userId));
         logResponse(request, dtos);
         return dtos;
     }
 
     @GetMapping("/search")
-    public List<ItemDto> getItems(
+    public List<ItemRetrieveDto> getItems(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam final String text,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemDto> dtos = mapper.mapToDto(itemService.getItems(text, userId));
+        final List<ItemRetrieveDto> dtos = mapper.mapToDto(itemService.getItems(text, userId));
         logResponse(request, dtos);
         return dtos;
     }
 
     @PatchMapping("/{id}")
-    public ItemDto updateItem(
+    public ItemRetrieveDto updateItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
-            @RequestBody final UpdateItemDto updateItemDto,
+            @RequestBody final ItemUpdateDto itemUpdateDto,
             final HttpServletRequest request
     ) {
-        logRequest(request, updateItemDto);
-        final Item item = mapper.mapToItem(updateItemDto);
-        final ItemDto dto = mapper.mapToDto(itemService.updateItem(id, item, userId));
+        logRequest(request, itemUpdateDto);
+        final Item item = mapper.mapToItem(itemUpdateDto);
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.updateItem(id, item, userId));
         logResponse(request, dto);
         return dto;
     }

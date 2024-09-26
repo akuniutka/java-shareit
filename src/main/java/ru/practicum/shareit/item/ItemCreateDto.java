@@ -1,9 +1,9 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item;
 
 import lombok.Data;
 
 @Data
-public class UpdateItemDto {
+class ItemCreateDto {
 
     private String name;
     private String description;
