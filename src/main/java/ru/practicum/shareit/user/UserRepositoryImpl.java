@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Repository
-public class UserRepositoryImpl extends BaseRepository<User> implements UserRepository {
+class UserRepositoryImpl extends BaseRepository<User> implements UserRepository {
 
     private final Set<String> uniqueEmails;
 

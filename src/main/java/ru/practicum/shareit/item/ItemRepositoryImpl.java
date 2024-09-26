@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Repository
-public class ItemRepositoryImpl extends BaseRepository<Item> implements ItemRepository {
+class ItemRepositoryImpl extends BaseRepository<Item> implements ItemRepository {
 
     public ItemRepositoryImpl(final ItemMapper mapper) {
         super(Item::getId, Item::setId, mapper);

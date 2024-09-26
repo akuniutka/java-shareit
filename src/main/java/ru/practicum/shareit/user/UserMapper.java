@@ -9,7 +9,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.List;
 
 @Mapper
-public interface UserMapper extends EntityCopier<User> {
+interface UserMapper extends EntityCopier<User> {
 
     User mapToUser(NewUserDto dto);
 

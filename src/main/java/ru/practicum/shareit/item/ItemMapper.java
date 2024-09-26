@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.dto.UpdateItemDto;
 import java.util.List;
 
 @Mapper
-public interface ItemMapper extends EntityCopier<Item> {
+interface ItemMapper extends EntityCopier<Item> {
 
     Item mapToItem(NewItemDto dto);
 
