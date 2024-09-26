@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,7 +30,7 @@ class ItemController extends BaseController {
     @PostMapping
     public ItemRetrieveDto createItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @RequestBody final ItemCreateDto itemCreateDto,
+            @Valid @RequestBody final ItemCreateDto itemCreateDto,
             final HttpServletRequest request
     ) {
         logRequest(request, itemCreateDto);
@@ -40,13 +41,12 @@ class ItemController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    public ItemRetrieveDto getUser(
-            @RequestHeader("X-Sharer-User-Id") final long userId,
+    public ItemRetrieveDto getItem(
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id, userId));
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id));
         logResponse(request, dto);
         return dto;
     }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +10,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.DuplicateDataException;
 import ru.practicum.shareit.common.exception.NotFoundException;
+
+import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -34,14 +36,13 @@ public class ControllerExceptionHandler extends BaseController {
             final ConstraintViolationException exception,
             final HttpServletRequest request
     ) {
-        final String model = exception.getConstraintViolations().stream()
-                .findFirst()
-                .map(ConstraintViolation::getRootBeanClass)
-                .map(Class::getSimpleName)
-                .map(String::toLowerCase)
-                .orElse("<unknown>");
-        log.warn("Validation error on model '{}' - {}", model, exception.getMessage());
-        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        final List<Map<String, String>> errors = exception.getConstraintViolations().stream()
+                .map(v -> Map.of(v.getPropertyPath().toString(), v.getMessage()))
+                .toList();
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                "Check that data you sent is correct");
+        response.setProperty("errors", errors);
+        log.warn("Model validation errors: {}", errors);
         logResponse(request, response);
         return response;
     }

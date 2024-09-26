@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,7 +27,7 @@ class UserController extends BaseController {
 
     @PostMapping
     public UserRetrieveDto createUser(
-            @RequestBody final UserCreateDto userCreateDto,
+            @Valid @RequestBody final UserCreateDto userCreateDto,
             final HttpServletRequest request
     ) {
         logRequest(request, userCreateDto);

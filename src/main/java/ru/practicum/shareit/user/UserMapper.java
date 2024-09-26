@@ -1,12 +1,11 @@
 package ru.practicum.shareit.user;
 
 import org.mapstruct.Mapper;
-import ru.practicum.shareit.common.EntityCopier;
 
 import java.util.List;
 
 @Mapper
-interface UserMapper extends EntityCopier<User> {
+interface UserMapper {
 
     User mapToUser(UserCreateDto dto);
 
