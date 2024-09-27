@@ -17,7 +17,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
-public class ItemServiceImpl implements ItemService {
+class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
     private final UserService userService;
@@ -34,12 +34,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getItem(final long id, final long userId) {
-        userService.getUser(userId);
-        return repository.findById(id)
-                .orElseThrow(
-                        () -> new NotFoundException(Item.class, id)
-                );
+    public Item getItem(final long id) {
+        return repository.findById(id).orElseThrow(
+                () -> new NotFoundException(Item.class, id)
+        );
+    }
+
+    @Override
+    public Item getItemWithOwner(final long id) {
+        return repository.findByIdWithOwner(id).orElseThrow(
+                () -> new NotFoundException(Item.class, id)
+        );
     }
 
     @Override
@@ -52,6 +57,11 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> getItems(final String text, final long userId) {
         userService.getUser(userId);
         return "".equals(text) ? List.of() : repository.findByNameOrDescription(text);
+    }
+
+    @Override
+    public boolean existByOwnerId(long userId) {
+        return repository.existsByOwnerId(userId);
     }
 
     @Override

@@ -14,7 +14,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService {
+class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
 
@@ -37,6 +37,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         return repository.findAll();
+    }
+
+    @Override
+    public boolean existsById(final long id) {
+        return repository.existsById(id);
     }
 
     @Override

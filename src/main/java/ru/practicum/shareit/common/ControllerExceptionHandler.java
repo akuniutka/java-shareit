@@ -5,14 +5,18 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.DuplicateDataException;
 import ru.practicum.shareit.common.exception.NotFoundException;
+import ru.practicum.shareit.common.exception.UnsupportedBookingStateFilterException;
+import ru.practicum.shareit.common.exception.ValidationException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
@@ -32,6 +36,17 @@ public class ControllerExceptionHandler extends BaseController {
     }
 
     @ExceptionHandler
+    public ProblemDetail handleMethodArgumentNotValidException(
+            final MethodArgumentNotValidException exception,
+            final HttpServletRequest request
+    ) {
+        final List<Map<String, String>> errors = exception.getBindingResult().getFieldErrors().stream()
+                .map(e -> Map.of(e.getField(), Objects.requireNonNull(e.getDefaultMessage())))
+                .toList();
+        return handleValidationErrors(errors, request);
+    }
+
+    @ExceptionHandler
     public ProblemDetail handleConstraintViolationException(
             final ConstraintViolationException exception,
             final HttpServletRequest request
@@ -39,10 +54,27 @@ public class ControllerExceptionHandler extends BaseController {
         final List<Map<String, String>> errors = exception.getConstraintViolations().stream()
                 .map(v -> Map.of(v.getPropertyPath().toString(), v.getMessage()))
                 .toList();
+        return handleValidationErrors(errors, request);
+    }
+
+    @ExceptionHandler
+    public ProblemDetail handleValidationException(
+        final ValidationException exception,
+        final HttpServletRequest request
+    ) {
+        final List<Map<String, String>> errors = List.of(Map.of(exception.getProperty(), exception.getViolation()));
+        return handleValidationErrors(errors, request);
+    }
+
+    @ExceptionHandler
+    public ProblemDetail handleUnsupportedBookingStateFilterException(
+        final UnsupportedBookingStateFilterException exception,
+            final HttpServletRequest request
+    ) {
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                 "Check that data you sent is correct");
-        response.setProperty("errors", errors);
-        log.warn("Model validation errors: {}", errors);
+        response.setProperty("error", "Unknown state: %s".formatted(exception.getInvalidValue()));
+        log.warn("Unknown state to filter bookings: {}", exception.getInvalidValue());
         logResponse(request, response);
         return response;
     }
@@ -77,6 +109,18 @@ public class ControllerExceptionHandler extends BaseController {
         log.error(throwable.getMessage(), throwable);
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Please contact site admin");
+        logResponse(request, response);
+        return response;
+    }
+
+    private ProblemDetail handleValidationErrors(
+            final List<Map<String, String>> errors,
+            final HttpServletRequest request
+    ) {
+        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                "Check that data you sent is correct");
+        response.setProperty("errors", errors);
+        log.warn("Model validation errors: {}", errors);
         logResponse(request, response);
         return response;
     }
