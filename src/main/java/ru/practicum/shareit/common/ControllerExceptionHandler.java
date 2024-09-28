@@ -3,6 +3,7 @@ package ru.practicum.shareit.common;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -59,8 +60,8 @@ public class ControllerExceptionHandler extends BaseController {
 
     @ExceptionHandler
     public ProblemDetail handleValidationException(
-        final ValidationException exception,
-        final HttpServletRequest request
+            final ValidationException exception,
+            final HttpServletRequest request
     ) {
         final List<Map<String, String>> errors = List.of(Map.of(exception.getProperty(), exception.getViolation()));
         return handleValidationErrors(errors, request);
@@ -68,7 +69,7 @@ public class ControllerExceptionHandler extends BaseController {
 
     @ExceptionHandler
     public ProblemDetail handleUnsupportedBookingStateFilterException(
-        final UnsupportedBookingStateFilterException exception,
+            final UnsupportedBookingStateFilterException exception,
             final HttpServletRequest request
     ) {
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
@@ -88,6 +89,26 @@ public class ControllerExceptionHandler extends BaseController {
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
         logResponse(request, response);
         return response;
+    }
+
+    @ExceptionHandler
+    public ProblemDetail handleDataIntegrityViolationException(
+            final DataIntegrityViolationException exception,
+            final HttpServletRequest request
+    ) {
+        if (exception.getCause() instanceof org.hibernate.exception.ConstraintViolationException cause) {
+            return switch (cause.getConstraintName()) {
+                case "users_email_ux" -> {
+                    log.warn(cause.getMessage());
+                    final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                            "Email already exists");
+                    logResponse(request, response);
+                    yield response;
+                }
+                case null, default -> handleThrowable(exception, request);
+            };
+        }
+        return handleThrowable(exception, request);
     }
 
     @ExceptionHandler
