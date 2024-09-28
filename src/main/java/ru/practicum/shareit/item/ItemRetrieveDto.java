@@ -11,4 +11,6 @@ class ItemRetrieveDto {
     private String name;
     private String description;
     private Boolean available;
+    private ItemBookingRetrieveDto lastBooking;
+    private ItemBookingRetrieveDto nextBooking;
 }

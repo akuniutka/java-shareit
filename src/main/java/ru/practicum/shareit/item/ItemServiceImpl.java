@@ -34,29 +34,24 @@ class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getItem(final long id) {
-        return repository.findById(id).orElseThrow(
-                () -> new NotFoundException(Item.class, id)
-        );
-    }
-
-    @Override
-    public Item getItemWithOwner(final long id) {
-        return repository.findByIdWithOwner(id).orElseThrow(
-                () -> new NotFoundException(Item.class, id)
-        );
+    public Item getItem(final long id, final long userId) {
+        return repository.findById(id)
+                .map(item -> maskDataByUserRights(item, userId))
+                .orElseThrow(() -> new NotFoundException(Item.class, id));
     }
 
     @Override
     public List<Item> getItems(final long userId) {
-        userService.getUser(userId);
-        return repository.findByOwnerId(userId);
+        return repository.findByOwnerId(userId).stream()
+                .map(item -> maskDataByUserRights(item, userId))
+                .toList();
     }
 
     @Override
     public List<Item> getItems(final String text, final long userId) {
-        userService.getUser(userId);
-        return "".equals(text) ? List.of() : repository.findByNameOrDescription(text);
+        return "".equals(text) ? List.of() : repository.findByNameOrDescription(text).stream()
+                .map(item -> maskDataByUserRights(item, userId))
+                .toList();
     }
 
     @Override
@@ -68,11 +63,10 @@ class ItemServiceImpl implements ItemService {
     @Transactional
     public Item updateItem(final long id, final Item update, final long userId) {
         Objects.requireNonNull(update, "Cannot update item: is null");
-        final Item item = repository.findByIdWithOwner(id).orElseThrow(
+        final Item item = repository.findById(id).orElseThrow(
                 () -> new NotFoundException(Item.class, id)
         );
-        final User user = userService.getUser(userId);
-        if (!Objects.equals(item.getOwner(), user)) {
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
             throw new ActionNotAllowedException("Only owner can update item");
         }
         Optional.ofNullable(update.getName()).ifPresent(item::setName);
@@ -86,7 +80,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public void deleteItem(final long id, final long userId) {
-        repository.findByIdWithOwner(id)
+        repository.findById(id)
                 .filter(item -> !Objects.equals(item.getOwner().getId(), userId))
                 .ifPresent(item -> {
                     throw new ActionNotAllowedException("Only owner can delete item");
@@ -94,7 +88,15 @@ class ItemServiceImpl implements ItemService {
         if (repository.delete(id) != 0) {
             log.info("Deleted item with id = {}", id);
         } else {
-            log.info("No item deleted: item with id = {} doe not exist", id);
+            log.info("No item deleted: item with id = {} does not exist", id);
         }
+    }
+
+    private Item maskDataByUserRights(final Item item, final long userId) {
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
+            item.setLastBooking(null);
+            item.setNextBooking(null);
+        }
+        return item;
     }
 }

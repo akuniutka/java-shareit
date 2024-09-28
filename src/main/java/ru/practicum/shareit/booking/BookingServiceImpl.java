@@ -46,7 +46,7 @@ class BookingServiceImpl implements BookingService {
         if (booking.getItem().getId() == null) {
             throw new ValidationException("item.id", "cannot be null");
         }
-        final Item item = itemService.getItemWithOwner(booking.getItem().getId());
+        final Item item = itemService.getItem(booking.getItem().getId(), userId);
         if (Objects.equals(item.getOwner().getId(), userId)) {
             throw new NotFoundException(Item.class, booking.getItem().getId());
         }

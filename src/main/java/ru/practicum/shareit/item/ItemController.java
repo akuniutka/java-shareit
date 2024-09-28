@@ -42,11 +42,12 @@ class ItemController extends BaseController {
 
     @GetMapping("/{id}")
     public ItemRetrieveDto getItem(
+            @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id));
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id, userId));
         logResponse(request, dto);
         return dto;
     }

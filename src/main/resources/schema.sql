@@ -26,3 +26,25 @@ CREATE TABLE IF NOT EXISTS bookings
   CONSTRAINT start_end_order CHECK (booking_start < booking_end),
   CONSTRAINT status_values CHECK (status IN ('WAITING', 'APPROVED', 'REJECTED'))
 );
+
+CREATE OR REPLACE VIEW last_bookings
+AS
+SELECT id AS booking_id,
+       item_id
+FROM (SELECT id,
+             item_id,
+             ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY booking_end DESC) AS r
+      FROM bookings
+      WHERE booking_end < CURRENT_TIMESTAMP) AS t
+WHERE r = 1;
+
+CREATE OR REPLACE VIEW next_bookings
+AS
+SELECT id AS booking_id,
+       item_id
+FROM (SELECT id,
+             item_id,
+             ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY booking_start) AS r
+      FROM bookings
+      WHERE booking_start > CURRENT_TIMESTAMP) AS t
+WHERE r = 1;

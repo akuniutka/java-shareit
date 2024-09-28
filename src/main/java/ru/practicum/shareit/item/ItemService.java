@@ -6,9 +6,7 @@ public interface ItemService {
 
     Item createItem(Item item, long userId);
 
-    Item getItem(long id);
-
-    Item getItemWithOwner(long id);
+    Item getItem(long id, long userId);
 
     List<Item> getItems(long userId);
 

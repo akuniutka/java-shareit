@@ -10,8 +10,7 @@ import java.util.Optional;
 
 interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query("select i from Item i join fetch i.owner where i.id = :id")
-    Optional<Item> findByIdWithOwner(@Param("id") long id);
+    Optional<Item> findById(long id);
 
     List<Item> findByOwnerId(long ownerId);
 
