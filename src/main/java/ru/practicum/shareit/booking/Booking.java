@@ -12,10 +12,12 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Entity
 @Table(name = "bookings")
@@ -31,9 +33,21 @@ public class Booking {
     @NotNull
     private Item item;
 
+    // To avoid circular reference in toString()
+    @ToString.Include
+    public Long item() {
+        return Optional.ofNullable(item).map(Item::getId).orElse(null);
+    }
+
     @ManyToOne
     @NotNull
     private User booker;
+
+    // To avoid circular reference in toString()
+    @ToString.Include
+    public Long booker() {
+        return Optional.ofNullable(booker).map(User::getId).orElse(null);
+    }
 
     @NotNull
     @Column(name = "booking_start")

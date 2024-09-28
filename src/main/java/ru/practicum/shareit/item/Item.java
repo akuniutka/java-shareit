@@ -11,7 +11,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import ru.practicum.shareit.user.User;
+
+import java.util.Optional;
 
 @Entity
 @Table(name = "items")
@@ -26,6 +29,12 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private User owner;
+
+    // To avoid circular reference in toString()
+    @ToString.Include
+    public Long owner() {
+        return Optional.ofNullable(owner).map(User::getId).orElse(null);
+    }
 
     @NotBlank
     private String name;
