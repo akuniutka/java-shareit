@@ -26,6 +26,8 @@ class ItemController extends BaseController {
 
     private final ItemService itemService;
     private final ItemMapper mapper;
+    private final CommentService commentService;
+    private final CommentMapper commentMapper;
 
     @PostMapping
     public ItemRetrieveDto createItem(
@@ -73,6 +75,20 @@ class ItemController extends BaseController {
         final List<ItemRetrieveDto> dtos = mapper.mapToDto(itemService.getItems(text, userId));
         logResponse(request, dtos);
         return dtos;
+    }
+
+    @PostMapping("/{id}/comment")
+    public CommentRetrieveDto addComment(
+            @RequestHeader("X-Sharer-User-Id") final long userId,
+            @PathVariable final long id,
+            @RequestBody final CommentCreateDto commentCreateDto,
+            final HttpServletRequest request
+    ) {
+        logRequest(request, commentCreateDto);
+        final Comment comment = commentMapper.mapTpComment(commentCreateDto);
+        final CommentRetrieveDto dto = commentMapper.mapToDto(commentService.addComment(comment, id, userId));
+        logResponse(request, dto);
+        return dto;
     }
 
     @PatchMapping("/{id}")

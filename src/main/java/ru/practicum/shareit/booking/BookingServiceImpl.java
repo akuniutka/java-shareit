@@ -100,6 +100,11 @@ class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<Booking> findAllCompleteBookingByUserIdAndItemId(long userId, long itemId) {
+        return repository.findAllCompleteBookingByBookerIdAndItemId(userId, itemId);
+    }
+
+    @Override
     @Transactional
     public Booking applyBookingVerdict(final long id, final boolean isApproved, final long userId) {
         final Booking booking = repository.findByIdWithBookerAndItemOwner(id).orElseThrow(

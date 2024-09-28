@@ -12,5 +12,7 @@ public interface BookingService {
 
     List<Booking> getOwnerBookings(long userId, BookingStatusFilter filter);
 
+    List<Booking> findAllCompleteBookingByUserIdAndItemId(long userId, long itemId);
+
     Booking applyBookingVerdict(long id, boolean isApproved, long userId);
 }

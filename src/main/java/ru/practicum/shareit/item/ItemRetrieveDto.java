@@ -3,6 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Set;
+
 @Data
 @EqualsAndHashCode(of = {"id"})
 class ItemRetrieveDto {
@@ -13,4 +15,5 @@ class ItemRetrieveDto {
     private Boolean available;
     private ItemBookingRetrieveDto lastBooking;
     private ItemBookingRetrieveDto nextBooking;
+    private Set<CommentRetrieveDto> comments;
 }

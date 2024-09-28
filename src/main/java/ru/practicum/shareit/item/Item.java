@@ -8,10 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -19,6 +21,7 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.user.User;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(name = "items")
@@ -35,9 +38,11 @@ public class Item {
     private User owner;
 
     @NotBlank
+    @Size(max = 255)
     private String name;
 
     @NotBlank
+    @Size(max = 2000)
     private String description;
 
     @NotNull
@@ -54,6 +59,10 @@ public class Item {
             joinColumns = @JoinColumn(name = "item_id", updatable = false, insertable = false),
             inverseJoinColumns = @JoinColumn(name = "booking_id", updatable = false, insertable = false))
     private Booking nextBooking;
+
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+    @ToString.Exclude
+    private Set<Comment> comments;
 
     // To avoid circular reference in toString()
     @ToString.Include

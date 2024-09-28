@@ -6,7 +6,7 @@ import ru.practicum.shareit.booking.Booking;
 
 import java.util.List;
 
-@Mapper
+@Mapper(uses = CommentMapper.class)
 interface ItemMapper {
 
     Item mapToItem(ItemCreateDto dto);

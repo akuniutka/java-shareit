@@ -57,4 +57,9 @@ interface BookingRepository extends JpaRepository<Booking, Long> {
             + "where b.item.owner.id = :userId and b.status = :status")
     List<Booking> findAllByItemOwnerIdAndStatus(@Param("userId") long userId, @Param("status") BookingStatus status,
             Sort sort);
+
+    @Query("select b from Booking b join fetch b.booker join fetch b.item i left join fetch i.comments"
+            + " where b.booker.id = :userId and b.item.id = :itemId and b.status = 'APPROVED'"
+            + " and b.end <= current_timestamp")
+    List<Booking> findAllCompleteBookingByBookerIdAndItemId(@Param("userId") long userId, @Param("itemId") long itemId);
 }

@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
@@ -42,14 +43,14 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> getItems(final long userId) {
-        return repository.findByOwnerId(userId).stream()
+        return repository.findByOwnerId(userId, Sort.by("id")).stream()
                 .map(item -> maskDataByUserRights(item, userId))
                 .toList();
     }
 
     @Override
     public List<Item> getItems(final String text, final long userId) {
-        return "".equals(text) ? List.of() : repository.findByNameOrDescription(text).stream()
+        return "".equals(text) ? List.of() : repository.findByNameOrDescription(text, Sort.by("id")).stream()
                 .map(item -> maskDataByUserRights(item, userId))
                 .toList();
     }
