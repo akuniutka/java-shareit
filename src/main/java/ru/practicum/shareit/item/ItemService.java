@@ -8,6 +8,8 @@ public interface ItemService {
 
     Item getItem(long id, long userId);
 
+    Item getItemToBook(long id, long userId);
+
     List<Item> getItems(long userId);
 
     List<Item> getItems(String text, long userId);

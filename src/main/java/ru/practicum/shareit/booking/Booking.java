@@ -33,31 +33,31 @@ public class Booking {
     @NotNull
     private Item item;
 
+    @ManyToOne
+    @NotNull
+    private User booker;
+
+    @Column(name = "booking_start")
+    @NotNull
+    private LocalDateTime start;
+
+    @Column(name = "booking_end")
+    @NotNull
+    private LocalDateTime end;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private BookingStatus status;
+
     // To avoid circular reference in toString()
     @ToString.Include
     public Long item() {
         return Optional.ofNullable(item).map(Item::getId).orElse(null);
     }
 
-    @ManyToOne
-    @NotNull
-    private User booker;
-
     // To avoid circular reference in toString()
     @ToString.Include
     public Long booker() {
         return Optional.ofNullable(booker).map(User::getId).orElse(null);
     }
-
-    @NotNull
-    @Column(name = "booking_start")
-    private LocalDateTime start;
-
-    @NotNull
-    @Column(name = "booking_end")
-    private LocalDateTime end;
-
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private BookingStatus status;
 }

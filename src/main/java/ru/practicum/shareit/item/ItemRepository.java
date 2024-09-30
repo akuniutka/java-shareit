@@ -12,7 +12,7 @@ import java.util.Optional;
 interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("select i from Item i left join fetch i.comments c left join fetch c.author where i.id = :id")
-    Optional<Item> findById(@Param("id") long id);
+    Optional<Item> findByIdWithRelations(@Param("id") long id);
 
     @Query("select i from Item i left join fetch i.comments c left join fetch c.author where i.owner.id = :userId")
     List<Item> findByOwnerId(@Param("userId") long ownerId, Sort sort);

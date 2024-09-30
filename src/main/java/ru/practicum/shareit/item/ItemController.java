@@ -85,7 +85,7 @@ class ItemController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request, commentCreateDto);
-        final Comment comment = commentMapper.mapTpComment(commentCreateDto);
+        final Comment comment = commentMapper.mapToComment(commentCreateDto);
         final CommentRetrieveDto dto = commentMapper.mapToDto(commentService.addComment(comment, id, userId));
         logResponse(request, dto);
         return dto;

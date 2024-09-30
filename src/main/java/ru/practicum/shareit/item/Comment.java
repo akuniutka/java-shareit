@@ -41,7 +41,7 @@ public class Comment {
     private String text;
 
     @NotNull
-    private LocalDateTime created = LocalDateTime.now();
+    private LocalDateTime created;
 
     // To avoid circular reference in toString()
     @ToString.Include

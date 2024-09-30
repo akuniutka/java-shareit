@@ -36,8 +36,8 @@ class BookingController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request, bookingCreateDto);
-        final Booking booking = mapper.mapToBooking(bookingCreateDto);
-        final BookingRetrieveDto dto = mapper.mapToDto(bookingService.createBooking(booking, userId));
+        final Booking booking = mapper.mapToBooking(bookingCreateDto, userId);
+        final BookingRetrieveDto dto = mapper.mapToDto(bookingService.createBooking(booking));
         logResponse(request, dto);
         return dto;
     }

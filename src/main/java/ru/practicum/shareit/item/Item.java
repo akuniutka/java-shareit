@@ -60,7 +60,7 @@ public class Item {
             inverseJoinColumns = @JoinColumn(name = "booking_id", updatable = false, insertable = false))
     private Booking nextBooking;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<Comment> comments;
 

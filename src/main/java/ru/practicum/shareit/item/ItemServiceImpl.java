@@ -36,8 +36,15 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     public Item getItem(final long id, final long userId) {
-        return repository.findById(id)
+        return repository.findByIdWithRelations(id)
                 .map(item -> maskDataByUserRights(item, userId))
+                .orElseThrow(() -> new NotFoundException(Item.class, id));
+    }
+
+    @Override
+    public Item getItemToBook(final long id, final long userId) {
+        return repository.findById(id)
+                .filter(item -> !Objects.equals(item.getOwner().getId(), userId))
                 .orElseThrow(() -> new NotFoundException(Item.class, id));
     }
 
@@ -64,7 +71,7 @@ class ItemServiceImpl implements ItemService {
     @Transactional
     public Item updateItem(final long id, final Item update, final long userId) {
         Objects.requireNonNull(update, "Cannot update item: is null");
-        final Item item = repository.findById(id).orElseThrow(
+        final Item item = repository.findByIdWithRelations(id).orElseThrow(
                 () -> new NotFoundException(Item.class, id)
         );
         if (!Objects.equals(item.getOwner().getId(), userId)) {
@@ -81,7 +88,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public void deleteItem(final long id, final long userId) {
-        repository.findById(id)
+        repository.findByIdWithRelations(id)
                 .filter(item -> !Objects.equals(item.getOwner().getId(), userId))
                 .ifPresent(item -> {
                     throw new ActionNotAllowedException("Only owner can delete item");

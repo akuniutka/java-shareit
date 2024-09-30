@@ -8,8 +8,10 @@ import java.util.List;
 @Mapper
 interface BookingMapper {
 
-    @Mapping(source = "itemId", target = "item.id")
-    Booking mapToBooking(BookingCreateDto dto);
+    @Mapping(target = "item.id", source = "dto.itemId")
+    @Mapping(target = "booker.id", source = "userId")
+    @Mapping(target = "status", expression = "java(BookingStatus.WAITING)")
+    Booking mapToBooking(BookingCreateDto dto, Long userId);
 
     BookingRetrieveDto mapToDto(Booking booking);
 

@@ -17,6 +17,6 @@ interface ItemMapper {
 
     List<ItemRetrieveDto> mapToDto(List<Item> items);
 
-    @Mapping(source = "booker.id", target = "bookerId")
+    @Mapping(target = "bookerId", source = "booker.id")
     ItemBookingRetrieveDto mapToDto(Booking booking);
 }

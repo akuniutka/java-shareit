@@ -10,7 +10,6 @@ import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.common.exception.ValidationException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemService;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
@@ -30,9 +29,12 @@ class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Booking createBooking(final Booking booking, final long userId) {
+    public Booking createBooking(final Booking booking) {
         Objects.requireNonNull(booking, "Cannot create booking: is null");
-        final User user = userService.getUser(userId);
+        Objects.requireNonNull(booking.getItem(), "Cannot create booking: booking.item is null");
+        Objects.requireNonNull(booking.getItem().getId(), "Cannot create booking: booking.item.id is null");
+        Objects.requireNonNull(booking.getBooker(), "Cannot create booking: booking.booker is null");
+        Objects.requireNonNull(booking.getBooker().getId(), "Cannot create booking: booking.booker.id is null");
         final LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         if (booking.getStart().isBefore(now)) {
             throw new ValidationException("start", "cannot be in past");
@@ -40,22 +42,12 @@ class BookingServiceImpl implements BookingService {
         if (!booking.getEnd().isAfter(booking.getStart())) {
             throw new ValidationException("end", "should be after start");
         }
-        if (booking.getItem() == null) {
-            throw new ValidationException("item", "cannot be null");
-        }
-        if (booking.getItem().getId() == null) {
-            throw new ValidationException("item.id", "cannot be null");
-        }
-        final Item item = itemService.getItem(booking.getItem().getId(), userId);
-        if (Objects.equals(item.getOwner().getId(), userId)) {
-            throw new NotFoundException(Item.class, booking.getItem().getId());
-        }
+        userService.getUser(booking.getBooker().getId());
+        final Item item = itemService.getItemToBook(booking.getItem().getId(), booking.getBooker().getId());
         if (!item.getAvailable()) {
             throw new ValidationException("item", "unavailable item");
         }
-        booking.setItem(item);
-        booking.setBooker(user);
-        booking.setStatus(BookingStatus.WAITING);
+        booking.getItem().setName(item.getName());
         final Booking createdBooking = repository.save(booking);
         log.info("Created booking with id = {}: {}", createdBooking.getId(), createdBooking);
         return createdBooking;

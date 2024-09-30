@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface BookingService {
 
-    Booking createBooking(Booking booking, long userId);
+    Booking createBooking(Booking booking);
 
     Booking getBooking(long id, long userId);
 
