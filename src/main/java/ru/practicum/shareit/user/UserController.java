@@ -1,5 +1,7 @@
 package ru.practicum.shareit.user;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,9 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.user.dto.NewUserDto;
-import ru.practicum.shareit.user.dto.UpdateUserDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.common.BaseController;
 
 import java.util.List;
 
@@ -20,49 +20,64 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController {
+class UserController extends BaseController {
 
     private final UserService userService;
     private final UserMapper mapper;
 
     @PostMapping
-    public UserDto createUser(@RequestBody final NewUserDto newUserDto) {
-        log.info("Received POST at /users: {}", newUserDto);
-        final User user = mapper.mapToUser(newUserDto);
-        final UserDto dto = mapper.mapToDto(userService.createUser(user));
-        log.info("Responded to POST /users: {}", dto);
+    public UserRetrieveDto createUser(
+            @Valid @RequestBody final UserCreateDto userCreateDto,
+            final HttpServletRequest request
+    ) {
+        logRequest(request, userCreateDto);
+        final User user = mapper.mapToUser(userCreateDto);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.createUser(user));
+        logResponse(request, dto);
         return dto;
     }
 
     @GetMapping("/{id}")
-    public UserDto getUser(@PathVariable final long id) {
-        log.info("Received GET at /users/{}", id);
-        final UserDto dto = mapper.mapToDto(userService.getUser(id));
-        log.info("Responded to GET /users/{}: {}", id, dto);
+    public UserRetrieveDto getUser(
+            @PathVariable final long id,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.getUser(id));
+        logResponse(request, dto);
         return dto;
     }
 
     @GetMapping
-    public List<UserDto> getUsers() {
-        log.info("Received GET at /users");
-        final List<UserDto> dtos = mapper.mapToDto(userService.getAllUsers());
-        log.info("Responded to GET /users: {}", dtos);
+    public List<UserRetrieveDto> getUsers(
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
+        final List<UserRetrieveDto> dtos = mapper.mapToDto(userService.getAllUsers());
+        logResponse(request, dtos);
         return dtos;
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateUser(@PathVariable final long id, @RequestBody final UpdateUserDto updateUserDto) {
-        log.info("Received PATCH at /users/{}: {}", id, updateUserDto);
-        final User user = mapper.mapToUser(updateUserDto);
-        final UserDto dto = mapper.mapToDto(userService.updateUser(id, user));
-        log.info("Responded to PATCH /users/{}: {}", id, dto);
+    public UserRetrieveDto updateUser(
+            @PathVariable final long id,
+            @RequestBody final UserUpdateDto userUpdateDto,
+            final HttpServletRequest request
+    ) {
+        logRequest(request, userUpdateDto);
+        final User user = mapper.mapToUser(userUpdateDto);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.updateUser(id, user));
+        logResponse(request, dto);
         return dto;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable final long id) {
-        log.info("Received DELETE at /users/{}", id);
+    public void deleteUser(
+            @PathVariable final long id,
+            final HttpServletRequest request
+    ) {
+        logRequest(request);
         userService.deleteUser(id);
-        log.info("Responded to DELETE users/{} with no body", id);
+        logResponse(request);
     }
 }

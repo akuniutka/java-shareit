@@ -1,37 +1,47 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.item;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "comments")
 @Data
 @EqualsAndHashCode(of = "id")
-public class Booking {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private Item item;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
+    private User author;
+
+    @NotBlank
+    @Size(max = 2000)
+    private String text;
+
+    @NotNull
+    private LocalDateTime created = LocalDateTime.now();
 
     // To avoid circular reference in toString()
     @ToString.Include
@@ -39,25 +49,9 @@ public class Booking {
         return Optional.ofNullable(item).map(Item::getId).orElse(null);
     }
 
-    @ManyToOne
-    @NotNull
-    private User booker;
-
     // To avoid circular reference in toString()
     @ToString.Include
-    public Long booker() {
-        return Optional.ofNullable(booker).map(User::getId).orElse(null);
+    public Long author() {
+        return Optional.ofNullable(author).map(User::getId).orElse(null);
     }
-
-    @NotNull
-    @Column(name = "booking_start")
-    private LocalDateTime start;
-
-    @NotNull
-    @Column(name = "booking_end")
-    private LocalDateTime end;
-
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private BookingStatus status;
 }

@@ -12,6 +12,8 @@ public interface ItemService {
 
     List<Item> getItems(String text, long userId);
 
+    boolean existByOwnerId(long userId);
+
     Item updateItem(long id, Item item, long userId);
 
     void deleteItem(long id, long userId);
