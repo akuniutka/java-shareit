@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.common.BaseController;
+import ru.practicum.shareit.common.HttpRequestResponseLogger;
 import ru.practicum.shareit.common.exception.UnsupportedBookingStateFilterException;
 
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import java.util.Objects;
 @RequestMapping(path = "/bookings")
 @AllArgsConstructor
 @Slf4j
-class BookingController extends BaseController {
+class BookingController extends HttpRequestResponseLogger {
 
     private final BookingService bookingService;
     private final BookingMapper mapper;

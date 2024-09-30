@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.common.BaseController;
+import ru.practicum.shareit.common.HttpRequestResponseLogger;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-class ItemController extends BaseController {
+class ItemController extends HttpRequestResponseLogger {
 
     private final ItemService itemService;
     private final ItemMapper mapper;

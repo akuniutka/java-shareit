@@ -21,7 +21,7 @@ import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
-public class ControllerExceptionHandler extends BaseController {
+public class ControllerExceptionHandler extends HttpRequestResponseLogger {
 
     @ExceptionHandler
     public ProblemDetail handleNotFoundException(

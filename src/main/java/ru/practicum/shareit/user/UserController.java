@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.common.BaseController;
+import ru.practicum.shareit.common.HttpRequestResponseLogger;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
-class UserController extends BaseController {
+class UserController extends HttpRequestResponseLogger {
 
     private final UserService userService;
     private final UserMapper mapper;
