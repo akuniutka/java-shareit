@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping(path = "/bookings")
-@AllArgsConstructor
+@RequestMapping("/bookings")
+@RequiredArgsConstructor
 @Slf4j
 class BookingController extends HttpRequestResponseLogger {
 
@@ -32,7 +32,7 @@ class BookingController extends HttpRequestResponseLogger {
     @PostMapping
     public BookingRetrieveDto createBooking(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @Valid @RequestBody final BookingCreateDto bookingCreateDto,
+            @RequestBody @Valid final BookingCreateDto bookingCreateDto,
             final HttpServletRequest request
     ) {
         logRequest(request, bookingCreateDto);

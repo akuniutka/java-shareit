@@ -44,7 +44,7 @@ class ItemClient extends BaseClient {
         return patch("/" + id, userId, dto);
     }
 
-    ResponseEntity<Object> deleteItem(final long userId, final long id) {
-        return delete("/" + id, userId);
+    void deleteItem(final long userId, final long id) {
+        delete("/" + id, userId);
     }
 }

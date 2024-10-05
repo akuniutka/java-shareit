@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class BaseClient {
 
@@ -53,6 +54,10 @@ public abstract class BaseClient {
         return patch(path, userId, null, body);
     }
 
+    protected ResponseEntity<Object> patch(final String path, final Long userId, final Map<String, Object> parameters) {
+        return patch(path, userId, parameters, null);
+    }
+
     protected <T> ResponseEntity<Object> patch(final String path, final Long userId,
             final Map<String, Object> parameters, final T body
     ) {
@@ -86,7 +91,9 @@ public abstract class BaseClient {
         } catch (HttpStatusCodeException exception) {
             return ResponseEntity
                     .status(exception.getStatusCode())
-                    .headers(exception.getResponseHeaders())
+                    .contentType(Optional.ofNullable(exception.getResponseHeaders())
+                            .map(HttpHeaders::getContentType)
+                            .orElse(MediaType.APPLICATION_JSON))
                     .body(exception.getResponseBodyAs(Object.class));
         }
     }

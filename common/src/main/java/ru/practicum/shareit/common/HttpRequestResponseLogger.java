@@ -37,7 +37,7 @@ public abstract class HttpRequestResponseLogger {
 
     protected String translateUserHeader(final HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader("X-Sharer-User-Id"))
-                .map(" (X-Later-User-Id: %s)"::formatted)
+                .map(" (X-Sharer-User-Id: %s)"::formatted)
                 .orElse("");
     }
 }

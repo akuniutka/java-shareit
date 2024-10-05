@@ -17,7 +17,7 @@ import ru.practicum.shareit.common.HttpRequestResponseLogger;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
 class UserController extends HttpRequestResponseLogger {
