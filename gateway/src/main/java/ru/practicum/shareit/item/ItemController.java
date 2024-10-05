@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,93 +17,85 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.common.HttpRequestResponseLogger;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
 class ItemController extends HttpRequestResponseLogger {
 
-    private final ItemService itemService;
-    private final ItemMapper mapper;
-    private final CommentService commentService;
-    private final CommentMapper commentMapper;
+    private final ItemClient client;
 
     @PostMapping
-    public ItemRetrieveDto createItem(
+    public ResponseEntity<Object> createItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
-            @RequestBody @Valid final ItemCreateDto itemCreateDto,
+            @RequestBody @Valid final ItemCreateDto dto,
             final HttpServletRequest request
     ) {
-        logRequest(request, itemCreateDto);
-        final Item item = mapper.mapToItem(itemCreateDto);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.createItem(item, userId));
         logResponse(request, dto);
-        return dto;
+        final ResponseEntity<Object> response = client.createItem(userId, dto);
+        logResponse(request, response.getBody());
+        return response;
     }
 
     @GetMapping("/{id}")
-    public ItemRetrieveDto getItem(
+    public ResponseEntity<Object> getItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.getItem(id, userId));
-        logResponse(request, dto);
-        return dto;
+        final ResponseEntity<Object> response = client.getItem(userId, id);
+        logResponse(request, response.getBody());
+        return  response;
     }
 
     @GetMapping
-    public List<ItemRetrieveDto> getItems(
+    public ResponseEntity<Object> getItems(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemRetrieveDto> dtos = mapper.mapToDto(itemService.getItems(userId));
-        logResponse(request, dtos);
-        return dtos;
+        final ResponseEntity<Object> response = client.getItems(userId);
+        logResponse(request, response.getBody());
+        return response;
     }
 
     @GetMapping("/search")
-    public List<ItemRetrieveDto> getItems(
+    public ResponseEntity<Object> getItems(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam final String text,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemRetrieveDto> dtos = mapper.mapToDto(itemService.getItems(text, userId));
-        logResponse(request, dtos);
-        return dtos;
+        final ResponseEntity<Object> response = client.getItems(userId, text);
+        logResponse(request, response.getBody());
+        return response;
     }
 
     @PostMapping("/{id}/comment")
-    public CommentRetrieveDto addComment(
+    public ResponseEntity<Object> addComment(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
-            @RequestBody @Valid final CommentCreateDto commentCreateDto,
+            @RequestBody @Valid final CommentCreateDto dto,
             final HttpServletRequest request
     ) {
-        logRequest(request, commentCreateDto);
-        final Comment comment = commentMapper.mapToComment(commentCreateDto);
-        final CommentRetrieveDto dto = commentMapper.mapToDto(commentService.addComment(comment, id, userId));
-        logResponse(request, dto);
-        return dto;
+        logRequest(request, dto);
+        final ResponseEntity<Object> response = client.addComment(userId, id, dto);
+        logResponse(request, response.getBody());
+        return  response;
     }
 
     @PatchMapping("/{id}")
-    public ItemRetrieveDto updateItem(
+    public ResponseEntity<Object> updateItem(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
-            @RequestBody @Valid final ItemUpdateDto itemUpdateDto,
+            @RequestBody @Valid final ItemUpdateDto dto,
             final HttpServletRequest request
     ) {
-        logRequest(request, itemUpdateDto);
-        final Item item = mapper.mapToItem(itemUpdateDto);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.updateItem(id, item, userId));
-        logResponse(request, dto);
-        return dto;
+        logRequest(request, dto);
+        final ResponseEntity<Object> response = client.updateItem(userId, id, dto);
+        logResponse(request, response.getBody());
+        return response;
     }
 
     @DeleteMapping("/{id}")
@@ -112,7 +105,8 @@ class ItemController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request);
-        itemService.deleteItem(id, userId);
-        logResponse(request);
+        client.deleteItem(userId, id);
+        logRequest(request);
     }
+
 }
