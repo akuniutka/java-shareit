@@ -31,7 +31,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RestClientTest(UserClient.class)
-class UserClientTest {
+class UserClientIT {
 
     @Value("${shareit-server.url}")
     private String serverUrl;
