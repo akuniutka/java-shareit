@@ -1,16 +1,17 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.request;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(of = "id")
-class CommentRetrieveDto {
+class ItemRequestRetrieveDto {
 
     private Long id;
-    private String authorName;
-    private String text;
+    private String description;
     private LocalDateTime created;
+    private Set<ItemRequestItemRetrieveDto> items;
 }

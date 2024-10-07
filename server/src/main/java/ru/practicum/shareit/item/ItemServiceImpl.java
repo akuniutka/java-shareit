@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.NotFoundException;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -22,12 +23,16 @@ class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
     private final UserService userService;
+    private final ItemRequestService itemRequestService;
 
     @Override
     @Transactional
     public Item createItem(final Item item, final long userId) {
         Objects.requireNonNull(item, "Cannot create item: is null");
         final User user = userService.getUser(userId);
+        if (item.getRequest() != null) {
+            itemRequestService.getItemRequest(item.getRequest().getId());
+        }
         item.setOwner(user);
         final Item createdItem = repository.save(item);
         log.info("Created item with id = {}: {}", createdItem.getId(), createdItem);

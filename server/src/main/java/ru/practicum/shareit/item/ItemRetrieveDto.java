@@ -13,6 +13,7 @@ class ItemRetrieveDto {
     private String name;
     private String description;
     private Boolean available;
+    private Long requestId;
     private ItemBookingRetrieveDto lastBooking;
     private ItemBookingRetrieveDto nextBooking;
     private Set<CommentRetrieveDto> comments;

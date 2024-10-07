@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of = "id")
-public class ItemBookingRetrieveDto {
+class ItemBookingRetrieveDto {
 
     private Long id;
     private Long bookerId;

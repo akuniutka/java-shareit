@@ -105,6 +105,13 @@ public class ControllerExceptionHandler extends HttpRequestResponseLogger {
                     logResponse(request, response);
                     yield response;
                 }
+                case "requests_requester_id_fk" -> {
+                    log.warn(cause.getMessage());
+                    final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN,
+                            "You should be an authorized user to post a request");
+                    logResponse(request, response);
+                    yield response;
+                }
                 case null, default -> handleThrowable(exception, request);
             };
         }
@@ -140,7 +147,8 @@ public class ControllerExceptionHandler extends HttpRequestResponseLogger {
     ) {
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                 "Check that data you sent is correct");
-        response.setProperty("errors", errors);
+        // TODO: after sprint #16 replace "error" with "errors"
+        response.setProperty("error", errors);
         log.warn("Model validation errors: {}", errors);
         logResponse(request, response);
         return response;

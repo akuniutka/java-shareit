@@ -6,13 +6,23 @@ CREATE TABLE IF NOT EXISTS users
   CONSTRAINT users_email_ux UNIQUE (email)
 );
 
+CREATE TABLE IF NOT EXISTS requests
+(
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  requester_id BIGINT                      NOT NULL,
+  description  VARCHAR(2000)               NOT NULL,
+  created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  CONSTRAINT requests_requester_id_fk FOREIGN KEY (requester_id) REFERENCES users (id)
+);
+
 CREATE TABLE IF NOT EXISTS items
 (
   id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   owner_id    BIGINT        NOT NULL REFERENCES users (id),
   name        VARCHAR(255)  NOT NULL,
   description VARCHAR(2000) NOT NULL,
-  available   BOOLEAN       NOT NULL
+  available   BOOLEAN       NOT NULL,
+  request_id  BIGINT        NULL REFERENCES requests (id)
 );
 
 CREATE TABLE IF NOT EXISTS bookings
@@ -44,7 +54,8 @@ FROM (SELECT id,
              item_id,
              ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY booking_start DESC) AS r
       FROM bookings
-      WHERE status = 'APPROVED' AND booking_start <= CURRENT_TIMESTAMP) AS t
+      WHERE status = 'APPROVED'
+        AND booking_start <= CURRENT_TIMESTAMP) AS t
 WHERE r = 1;
 
 CREATE OR REPLACE VIEW next_bookings
@@ -55,5 +66,6 @@ FROM (SELECT id,
              item_id,
              ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY booking_start) AS r
       FROM bookings
-      WHERE status = 'APPROVED' AND booking_start > CURRENT_TIMESTAMP) AS t
+      WHERE status = 'APPROVED'
+        AND booking_start > CURRENT_TIMESTAMP) AS t
 WHERE r = 1;

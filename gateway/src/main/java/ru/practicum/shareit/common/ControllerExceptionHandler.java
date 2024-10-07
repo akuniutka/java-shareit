@@ -27,7 +27,8 @@ public class ControllerExceptionHandler extends HttpRequestResponseLogger {
                         (s1, s2) -> s1 + ", " + s2));
         final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                 "Check that data you sent is correct");
-        response.setProperty("errors", errors);
+        // TODO: after sprint #16 replace "error" with "errors"
+        response.setProperty("error", errors);
         log.warn("Model validation errors: {}", errors);
         logResponse(request, response);
         return response;

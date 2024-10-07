@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import java.util.Optional;
@@ -64,6 +65,9 @@ public class Item {
     @ToString.Exclude
     private Set<Comment> comments;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ItemRequest request;
+
     // To avoid circular reference in toString()
     @ToString.Include
     public Long owner() {
@@ -80,5 +84,11 @@ public class Item {
     @ToString.Include
     public Long nextBooking() {
         return Optional.ofNullable(nextBooking).map(Booking::getId).orElse(null);
+    }
+
+    // To avoid circular reference in toString()
+    @ToString.Include
+    public Long request() {
+        return Optional.ofNullable(request).map(ItemRequest::getId).orElse(null);
     }
 }
