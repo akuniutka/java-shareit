@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,45 +18,45 @@ interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByIdAndBookerIdOrItemOwnerId(@Param("id") long id, @Param("userId") long userId);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item where b.booker.id = :userId")
-    List<Booking> findAllByBookerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findAllByBookerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item where b.booker.id = :userId "
             + "and b.start <= current_timestamp and b.end > current_timestamp")
-    List<Booking> findCurrentByBookerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findCurrentByBookerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item where b.booker.id = :userId "
             + "and b.end <= current_timestamp")
-    List<Booking> findPastByBookerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findPastByBookerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item where b.booker.id = :userId "
             + "and b.start > current_timestamp")
-    List<Booking> findFutureByBookerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findFutureByBookerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item where b.booker.id = :userId "
             + "and b.status = :status")
     List<Booking> findAllByBookerIdAndStatus(@Param("userId") long userId, @Param("status") BookingStatus status,
-            Sort sort);
+            Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item join b.item.owner "
             + "where b.item.owner.id = :userId")
-    List<Booking> findAllByItemOwnerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findAllByItemOwnerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item join b.item.owner "
             + "where b.item.owner.id = :userId and b.start <= current_timestamp and b.end > current_timestamp")
-    List<Booking> findCurrentByItemOwnerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findCurrentByItemOwnerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item join b.item.owner "
             + "where b.item.owner.id = :userId and b.end <= current_timestamp")
-    List<Booking> findPastByItemOwnerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findPastByItemOwnerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item join b.item.owner "
             + "where b.item.owner.id = :userId and b.start > current_timestamp")
-    List<Booking> findFutureByItemOwnerId(@Param("userId") long userId, Sort sort);
+    List<Booking> findFutureByItemOwnerId(@Param("userId") long userId, Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item join b.item.owner "
             + "where b.item.owner.id = :userId and b.status = :status")
     List<Booking> findAllByItemOwnerIdAndStatus(@Param("userId") long userId, @Param("status") BookingStatus status,
-            Sort sort);
+            Pageable page);
 
     @Query("select b from Booking b join fetch b.booker join fetch b.item i left join fetch i.comments"
             + " where b.booker.id = :userId and b.item.id = :itemId and b.status = 'APPROVED'"

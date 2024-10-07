@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,32 +63,38 @@ class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getUserBookings(final long userId, final BookingStatusFilter filter) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+    public List<Booking> getUserBookings(final long userId, final BookingStatusFilter filter, final int from,
+            final int size
+    ) {
+        final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        final Pageable page = PageRequest.of(from / size, size, sort);
         return switch (filter) {
-            case ALL -> repository.findAllByBookerId(userId, sort);
-            case CURRENT -> repository.findCurrentByBookerId(userId, sort);
-            case PAST -> repository.findPastByBookerId(userId, sort);
-            case FUTURE -> repository.findFutureByBookerId(userId, sort);
-            case WAITING -> repository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING, sort);
-            case REJECTED -> repository.findAllByBookerIdAndStatus(userId, BookingStatus.REJECTED, sort);
+            case ALL -> repository.findAllByBookerId(userId, page);
+            case CURRENT -> repository.findCurrentByBookerId(userId, page);
+            case PAST -> repository.findPastByBookerId(userId, page);
+            case FUTURE -> repository.findFutureByBookerId(userId, page);
+            case WAITING -> repository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING, page);
+            case REJECTED -> repository.findAllByBookerIdAndStatus(userId, BookingStatus.REJECTED, page);
             case null -> throw new AssertionError();
         };
     }
 
     @Override
-    public List<Booking> getOwnerBookings(final long userId, final BookingStatusFilter filter) {
+    public List<Booking> getOwnerBookings(final long userId, final BookingStatusFilter filter, final int from,
+            final int size
+    ) {
         if (!itemService.existByOwnerId(userId)) {
             throw new ActionNotAllowedException("You should owe items to get related bookings");
         }
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        final Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        final Pageable page = PageRequest.of(from / size, size, sort);
         return switch (filter) {
-            case ALL -> repository.findAllByItemOwnerId(userId, sort);
-            case CURRENT -> repository.findCurrentByItemOwnerId(userId, sort);
-            case PAST -> repository.findPastByItemOwnerId(userId, sort);
-            case FUTURE -> repository.findFutureByItemOwnerId(userId, sort);
-            case WAITING -> repository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.WAITING, sort);
-            case REJECTED -> repository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.REJECTED, sort);
+            case ALL -> repository.findAllByItemOwnerId(userId, page);
+            case CURRENT -> repository.findCurrentByItemOwnerId(userId, page);
+            case PAST -> repository.findPastByItemOwnerId(userId, page);
+            case FUTURE -> repository.findFutureByItemOwnerId(userId, page);
+            case WAITING -> repository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.WAITING, page);
+            case REJECTED -> repository.findAllByItemOwnerIdAndStatus(userId, BookingStatus.REJECTED, page);
             case null -> throw new AssertionError();
         };
     }

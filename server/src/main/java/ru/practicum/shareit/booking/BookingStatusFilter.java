@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-enum BookingStatusFilter {
+public enum BookingStatusFilter {
     ALL,
     CURRENT,
     PAST,

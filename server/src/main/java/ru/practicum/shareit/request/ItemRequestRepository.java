@@ -1,6 +1,6 @@
 package ru.practicum.shareit.request;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +14,8 @@ interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> {
     Optional<ItemRequest> findByIdWithRelations(@Param("id") long id);
 
     @Query("select r from ItemRequest r left join fetch r.items where r.requester.id = :userId")
-    List<ItemRequest> findAllByRequesterId(@Param("userId") long userId, Sort sort);
+    List<ItemRequest> findAllByRequesterId(@Param("userId") long userId, Pageable page);
 
     @Query("select r from ItemRequest r left join fetch r.items where r.requester.id != :userId")
-    List<ItemRequest> findAllOtherByRequesterId(@Param("userId") long userId, Sort sort);
+    List<ItemRequest> findAllOtherByRequesterId(@Param("userId") long userId, Pageable page);
 }

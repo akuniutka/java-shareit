@@ -2,6 +2,8 @@ package ru.practicum.shareit.request;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.common.HttpRequestResponseLogger;
 
@@ -52,10 +55,13 @@ class ItemRequestController extends HttpRequestResponseLogger {
     @GetMapping
     List<ItemRequestRetrieveDto> getOwnItemRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemRequestRetrieveDto> dtos = mapper.mapToDto(itemRequestService.getOwnRequests(userId));
+        final List<ItemRequestRetrieveDto> dtos = mapper.mapToDto(itemRequestService.getOwnRequests(userId, from,
+                size));
         logResponse(request, dtos);
         return dtos;
     }
@@ -63,10 +69,13 @@ class ItemRequestController extends HttpRequestResponseLogger {
     @GetMapping("/all")
     List<ItemRequestRetrieveDto> getOthersItemRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final List<ItemRequestRetrieveDto> dtos = mapper.mapToDto(itemRequestService.getOthersRequests(userId));
+        final List<ItemRequestRetrieveDto> dtos = mapper.mapToDto(itemRequestService.getOthersRequests(userId, from,
+                size));
         logResponse(request, dtos);
         return dtos;
     }

@@ -31,12 +31,20 @@ class BookingClient extends BaseClient {
         return get("/" + id, userId);
     }
 
-    ResponseEntity<Object> getUserBookings(final long userId, final String state) {
-        return get("?state={state}", userId, Map.of("state", state));
+    ResponseEntity<Object> getUserBookings(final long userId, final String state, final int from, final int size) {
+        final Map<String, Object> parameters = Map.of(
+                "state", state,
+                "from", from,
+                "size", size);
+        return get("?state={state}&from={from}&size={size}", userId, parameters);
     }
 
-    ResponseEntity<Object> getOwnerBookings(final long userId, final String state) {
-        return get("/owner?state={state}", userId, Map.of("state", state));
+    ResponseEntity<Object> getOwnerBookings(final long userId, final String state, final int from, final int size) {
+        final Map<String, Object> parameters = Map.of(
+                "state", state,
+                "from", from,
+                "size", size);
+        return get("/owner?state={state}&from={from}&size={size}", userId, parameters);
     }
 
     ResponseEntity<Object> processBookingRequest(final long userId, final long id, final boolean approved) {

@@ -5,6 +5,8 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,16 +63,18 @@ class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequest> getOwnRequests(final long userId) {
+    public List<ItemRequest> getOwnRequests(final long userId, final int from, final int size) {
         userService.getUser(userId);
-        Sort sort = Sort.by(Sort.Direction.DESC, "created");
-        return repository.findAllByRequesterId(userId, sort);
+        final Sort sort = Sort.by(Sort.Direction.DESC, "created");
+        final Pageable page = PageRequest.of(from / size, size, sort);
+        return repository.findAllByRequesterId(userId, page);
     }
 
     @Override
-    public List<ItemRequest> getOthersRequests(long userId) {
+    public List<ItemRequest> getOthersRequests(final long userId, final int from, final int size) {
         userService.getUser(userId);
-        Sort sort = Sort.by(Sort.Direction.DESC, "created");
-        return repository.findAllOtherByRequesterId(userId, sort);
+        final Sort sort = Sort.by(Sort.Direction.DESC, "created");
+        final Pageable page = PageRequest.of(from / size, size, sort);
+        return repository.findAllOtherByRequesterId(userId, page);
     }
 }

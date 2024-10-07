@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -52,10 +54,12 @@ class BookingController extends HttpRequestResponseLogger {
     ResponseEntity<Object> getUserBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getUserBookings(userId, state);
+        final ResponseEntity<Object> response = client.getUserBookings(userId, state, from, size);
         logResponse(request, response.getBody());
         return response;
     }
@@ -64,10 +68,12 @@ class BookingController extends HttpRequestResponseLogger {
     ResponseEntity<Object> getOwnerBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOwnerBookings(userId, state);
+        final ResponseEntity<Object> response = client.getOwnerBookings(userId, state, from, size);
         logResponse(request, response.getBody());
         return  response;
     }

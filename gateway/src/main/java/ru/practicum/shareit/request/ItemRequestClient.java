@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.common.BaseClient;
 
+import java.util.Map;
+
 @Service
 class ItemRequestClient extends BaseClient {
 
@@ -29,11 +31,17 @@ class ItemRequestClient extends BaseClient {
         return get("/" + id, userId);
     }
 
-    ResponseEntity<Object> getOwnItemRequests(final long userId) {
-        return get("", userId);
+    ResponseEntity<Object> getOwnItemRequests(final long userId, final int from, final int size) {
+        final Map<String, Object> parameters = Map.of(
+                "from", from,
+                "size", size);
+        return get("?from={from}&size={size}", userId, parameters);
     }
 
-    ResponseEntity<Object> getOthersItemRequests(final long userId) {
-        return get("/all", userId);
+    ResponseEntity<Object> getOthersItemRequests(final long userId, final int from, final int size) {
+        final Map<String, Object> parameters = Map.of(
+                "from", from,
+                "size", size);
+        return get("/all?from={from}&size={size}", userId, parameters);
     }
 }

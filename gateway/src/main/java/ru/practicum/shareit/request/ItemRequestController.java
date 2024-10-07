@@ -2,6 +2,8 @@ package ru.practicum.shareit.request;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.common.HttpRequestResponseLogger;
 
@@ -49,10 +52,12 @@ public class ItemRequestController extends HttpRequestResponseLogger {
     @GetMapping
     ResponseEntity<Object> getOwnItemRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOwnItemRequests(userId);
+        final ResponseEntity<Object> response = client.getOwnItemRequests(userId, from, size);
         logResponse(request, response);
         return response;
     }
@@ -60,10 +65,12 @@ public class ItemRequestController extends HttpRequestResponseLogger {
     @GetMapping("/all")
     ResponseEntity<Object> getOthersRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOthersItemRequests(userId);
+        final ResponseEntity<Object> response = client.getOthersItemRequests(userId, from, size);
         logResponse(request, response);
         return response;
     }

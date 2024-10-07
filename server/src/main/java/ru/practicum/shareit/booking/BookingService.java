@@ -8,9 +8,9 @@ public interface BookingService {
 
     Booking getBooking(long id, long userId);
 
-    List<Booking> getUserBookings(long userId, BookingStatusFilter filter);
+    List<Booking> getUserBookings(long userId, BookingStatusFilter filter, int from, int size);
 
-    List<Booking> getOwnerBookings(long userId, BookingStatusFilter filter);
+    List<Booking> getOwnerBookings(long userId, BookingStatusFilter filter, int from, int size);
 
     List<Booking> findAllCompleteBookingByUserIdAndItemId(long userId, long itemId);
 

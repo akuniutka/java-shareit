@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,11 +60,14 @@ class BookingController extends HttpRequestResponseLogger {
     public List<BookingRetrieveDto> getUserBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
         final BookingStatusFilter filter = convertToFilter(state);
-        final List<BookingRetrieveDto> dtos = mapper.mapToDto(bookingService.getUserBookings(userId, filter));
+        final List<BookingRetrieveDto> dtos = mapper.mapToDto(bookingService.getUserBookings(userId, filter, from,
+                size));
         logResponse(request, dtos);
         return dtos;
     }
@@ -71,11 +76,14 @@ class BookingController extends HttpRequestResponseLogger {
     public List<BookingRetrieveDto> getOwnerBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
+            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
+            @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
         final BookingStatusFilter filter = convertToFilter(state);
-        final List<BookingRetrieveDto> dtos = mapper.mapToDto(bookingService.getOwnerBookings(userId, filter));
+        final List<BookingRetrieveDto> dtos = mapper.mapToDto(bookingService.getOwnerBookings(userId, filter, from,
+                size));
         logResponse(request, dtos);
         return dtos;
     }
