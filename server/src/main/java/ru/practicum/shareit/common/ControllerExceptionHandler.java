@@ -1,7 +1,6 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -43,17 +42,6 @@ public class ControllerExceptionHandler extends HttpRequestResponseLogger {
     ) {
         final List<Map<String, String>> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(e -> Map.of(e.getField(), Objects.requireNonNull(e.getDefaultMessage())))
-                .toList();
-        return handleValidationErrors(errors, request);
-    }
-
-    @ExceptionHandler
-    public ProblemDetail handleConstraintViolationException(
-            final ConstraintViolationException exception,
-            final HttpServletRequest request
-    ) {
-        final List<Map<String, String>> errors = exception.getConstraintViolations().stream()
-                .map(v -> Map.of(v.getPropertyPath().toString(), v.getMessage()))
                 .toList();
         return handleValidationErrors(errors, request);
     }

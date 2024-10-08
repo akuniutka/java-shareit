@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.request.ItemRequestService;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@Validated
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j

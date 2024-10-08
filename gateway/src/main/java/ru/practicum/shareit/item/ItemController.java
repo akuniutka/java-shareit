@@ -108,5 +108,4 @@ class ItemController extends HttpRequestResponseLogger {
         client.deleteItem(userId, id);
         logRequest(request);
     }
-
 }

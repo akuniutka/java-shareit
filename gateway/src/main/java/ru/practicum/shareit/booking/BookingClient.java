@@ -1,16 +1,20 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.common.BaseClient;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Service
+@Validated
 class BookingClient extends BaseClient {
 
     BookingClient(
@@ -23,7 +27,8 @@ class BookingClient extends BaseClient {
                 .build());
     }
 
-    ResponseEntity<Object> createBooking(final long userId, final BookingCreateDto dto) {
+    ResponseEntity<Object> createBooking(final long userId, @Valid final BookingCreateDto dto) {
+        Objects.requireNonNull(dto, "Cannot create booking: is null");
         return post("", userId, dto);
     }
 

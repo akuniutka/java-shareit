@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.common.exception.ValidationException;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@Validated
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j

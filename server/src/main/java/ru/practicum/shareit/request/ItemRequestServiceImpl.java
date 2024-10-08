@@ -1,8 +1,5 @@
 package ru.practicum.shareit.request;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -10,14 +7,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Service
+@Validated
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
@@ -25,16 +23,11 @@ class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository repository;
     private final UserService userService;
-    private final Validator validator;
 
     @Override
     @Transactional
     public ItemRequest createItemRequest(final ItemRequest itemRequest) {
         Objects.requireNonNull(itemRequest, "Cannot create item request: is null");
-        Set<ConstraintViolation<ItemRequest>> violations = validator.validate(itemRequest);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
-        }
 
         // TODO: Remove the following code after sprint #16
         // Hardcoded Postman test does not expect that one item request id may be skipped while creating an item request

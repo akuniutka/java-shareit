@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
+
 interface CommentService {
 
-    Comment addComment(Comment comment, long id, long userId);
+    Comment addComment(@Valid Comment comment, long id, long userId);
 }

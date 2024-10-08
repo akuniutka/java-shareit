@@ -1,10 +1,12 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 public interface BookingService {
 
-    Booking createBooking(Booking booking);
+    Booking createBooking(@Valid Booking booking);
 
     Booking getBooking(long id, long userId);
 

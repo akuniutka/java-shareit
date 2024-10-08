@@ -1,16 +1,19 @@
 package ru.practicum.shareit.request;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.common.BaseClient;
 
 import java.util.Map;
 
 @Service
+@Validated
 class ItemRequestClient extends BaseClient {
 
     ItemRequestClient(
@@ -23,7 +26,7 @@ class ItemRequestClient extends BaseClient {
                 .build());
     }
 
-    ResponseEntity<Object> createItemRequest(final long userId, final ItemRequestCreateDto dto) {
+    ResponseEntity<Object> createItemRequest(final long userId, @Valid final ItemRequestCreateDto dto) {
         return post("", userId, dto);
     }
 
