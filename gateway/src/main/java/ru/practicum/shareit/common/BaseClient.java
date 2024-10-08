@@ -5,12 +5,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class BaseClient {
 
@@ -82,19 +80,10 @@ public abstract class BaseClient {
             final Map<String, Object> parameters, final T body
     ) {
         final HttpEntity<T> request = new HttpEntity<>(body, headers(userId, body != null));
-        try {
-            if (parameters != null) {
-                return rest.exchange(path, method, request, Object.class, parameters);
-            } else {
-                return rest.exchange(path, method, request, Object.class);
-            }
-        } catch (HttpStatusCodeException exception) {
-            return ResponseEntity
-                    .status(exception.getStatusCode())
-                    .contentType(Optional.ofNullable(exception.getResponseHeaders())
-                            .map(HttpHeaders::getContentType)
-                            .orElse(MediaType.APPLICATION_JSON))
-                    .body(exception.getResponseBodyAs(Object.class));
+        if (parameters != null) {
+            return rest.exchange(path, method, request, Object.class, parameters);
+        } else {
+            return rest.exchange(path, method, request, Object.class);
         }
     }
 

@@ -2,14 +2,19 @@ package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -30,6 +35,21 @@ public class ControllerExceptionHandler extends HttpRequestResponseLogger {
         // TODO: after sprint #16 replace "error" with "errors"
         response.setProperty("error", errors);
         log.warn("Model validation errors: {}", errors);
+        logResponse(request, response);
+        return response;
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Object> handleHttpStatusCodeException(
+            final HttpStatusCodeException exception,
+            final HttpServletRequest request
+    ) {
+        final ResponseEntity<Object> response = ResponseEntity
+                .status(exception.getStatusCode())
+                .contentType(Optional.ofNullable(exception.getResponseHeaders())
+                        .map(HttpHeaders::getContentType)
+                        .orElse(MediaType.APPLICATION_JSON))
+                .body(exception.getResponseBodyAs(Object.class));
         logResponse(request, response);
         return response;
     }

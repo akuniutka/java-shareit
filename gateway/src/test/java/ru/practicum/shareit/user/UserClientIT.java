@@ -17,11 +17,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -97,11 +100,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.createUser(dto);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.createUser(dto));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.CONFLICT));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.CONFLICT));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -122,11 +129,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.createUser(dto);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.createUser(dto));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -160,11 +171,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUser(1L);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.getUser(1L));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -179,11 +194,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUser(1L);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () ->client.getUser(1L));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -236,11 +255,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUsers();
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.getUsers());
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -286,11 +309,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.updateUser(1L, dto);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.updateUser(1L, dto));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.CONFLICT));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.CONFLICT));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -311,11 +338,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.updateUser(1L, dto);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.updateUser(1L, dto));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -336,11 +367,15 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.updateUser(1L, dto);
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.updateUser(1L, dto));
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
+                .map(HttpHeaders::getContentType)
+                .orElse(null);
+        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        final String actual = exception.getResponseBodyAsString();
         JSONAssert.assertEquals(actual, body, false);
     }
 
