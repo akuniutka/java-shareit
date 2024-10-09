@@ -3,7 +3,6 @@ package ru.practicum.shareit.request;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -26,22 +25,22 @@ class ItemRequestClient extends BaseClient {
                 .build());
     }
 
-    ResponseEntity<Object> createItemRequest(final long userId, @Valid final ItemRequestCreateDto dto) {
+    Object createItemRequest(final long userId, @Valid final ItemRequestCreateDto dto) {
         return post("", userId, dto);
     }
 
-    ResponseEntity<Object> getItemRequest(final long userId, final long id) {
+    Object getItemRequest(final long userId, final long id) {
         return get("/" + id, userId);
     }
 
-    ResponseEntity<Object> getOwnItemRequests(final long userId, final int from, final int size) {
+    Object getOwnItemRequests(final long userId, final int from, final int size) {
         final Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size);
         return get("?from={from}&size={size}", userId, parameters);
     }
 
-    ResponseEntity<Object> getOthersItemRequests(final long userId, final int from, final int size) {
+    Object getOthersItemRequests(final long userId, final int from, final int size) {
         final Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size);

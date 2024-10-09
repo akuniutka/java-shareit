@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,31 +26,31 @@ class BookingController extends HttpRequestResponseLogger {
     private final BookingClient client;
 
     @PostMapping
-    public ResponseEntity<Object> createBooking(
+    public Object createBooking(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestBody @Valid final BookingCreateDto dto,
             final HttpServletRequest request
     ) {
         logRequest(request, dto);
-        final ResponseEntity<Object> response = client.createBooking(userId, dto);
+        final Object response = client.createBooking(userId, dto);
         logResponse(request, response);
         return response;
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<Object> getBooking(
+    Object getBooking(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getBooking(userId, id);
-        logResponse(request, response.getBody());
+        final Object response = client.getBooking(userId, id);
+        logResponse(request, response);
         return response;
     }
 
     @GetMapping
-    ResponseEntity<Object> getUserBookings(
+    Object getUserBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
@@ -59,13 +58,13 @@ class BookingController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getUserBookings(userId, state, from, size);
-        logResponse(request, response.getBody());
+        final Object response = client.getUserBookings(userId, state, from, size);
+        logResponse(request, response);
         return response;
     }
 
     @GetMapping("/owner")
-    ResponseEntity<Object> getOwnerBookings(
+    Object getOwnerBookings(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "ALL") final String state,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
@@ -73,21 +72,21 @@ class BookingController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOwnerBookings(userId, state, from, size);
-        logResponse(request, response.getBody());
+        final Object response = client.getOwnerBookings(userId, state, from, size);
+        logResponse(request, response);
         return  response;
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<Object> processBookingRequest(
+    Object processBookingRequest(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             @RequestParam final boolean approved,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.processBookingRequest(userId, id, approved);
-        logResponse(request, response.getBody());
+        final Object response = client.processBookingRequest(userId, id, approved);
+        logResponse(request, response);
         return response;
     }
 }

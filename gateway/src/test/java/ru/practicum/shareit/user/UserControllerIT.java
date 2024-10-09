@@ -11,10 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -70,7 +71,7 @@ class UserControllerIT {
     @Test
     void testCreateUser() throws Exception {
         final String body = loadJson("create_user.json");
-        when(client.createUser(userCreateDto)).thenReturn(makeOkResponse(body));
+        when(client.createUser(userCreateDto)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -89,7 +90,7 @@ class UserControllerIT {
     @Test
     void testCreateUserWhenDuplicateEmail() throws Exception {
         final String body = loadJson("create_user_duplicate_email.json");
-        when(client.createUser(userCreateDto)).thenReturn(makeErrorResponse(HttpStatus.CONFLICT, body));
+        when(client.createUser(userCreateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -125,7 +126,7 @@ class UserControllerIT {
     @Test
     void testGetUser() throws Exception {
         final String body = loadJson("get_user.json");
-        when(client.getUser(1L)).thenReturn(makeOkResponse(body));
+        when(client.getUser(1L)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl + "/1")
                         .accept(MediaType.APPLICATION_JSON))
@@ -141,7 +142,7 @@ class UserControllerIT {
     @Test
     void testGetUserWhenNotFound() throws Exception {
         final String body = loadJson("get_user_not_found.json");
-        when(client.getUser(1L)).thenReturn(makeErrorResponse(HttpStatus.NOT_FOUND, body));
+        when(client.getUser(1L)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
         mvc.perform(get(baseUrl + "/1")
                         .accept(MediaType.APPLICATION_JSON))
@@ -170,7 +171,7 @@ class UserControllerIT {
     @Test
     void testGetUsers() throws Exception {
         final String body = loadJson("get_users.json");
-        when(client.getUsers()).thenReturn(makeOkResponse(body));
+        when(client.getUsers()).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl)
                         .accept(MediaType.APPLICATION_JSON))
@@ -186,7 +187,7 @@ class UserControllerIT {
     @Test
     void testGetUsersWhenEmpty() throws Exception {
         final String body = loadJson("get_users_empty.json");
-        when(client.getUsers()).thenReturn(makeOkResponse(body));
+        when(client.getUsers()).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl)
                         .accept(MediaType.APPLICATION_JSON))
@@ -202,7 +203,7 @@ class UserControllerIT {
     @Test
     void testUpdateUser() throws Exception {
         final String body = loadJson("update_user.json");
-        when(client.updateUser(1L, userUpdateDto)).thenReturn(makeOkResponse(body));
+        when(client.updateUser(1L, userUpdateDto)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(patch(baseUrl + "/1")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -238,7 +239,7 @@ class UserControllerIT {
     @Test
     void testUpdateUserWhenNotFound() throws Exception {
         final String body = loadJson("update_user_not_found.json");
-        when(client.updateUser(1L, userUpdateDto)).thenReturn(makeErrorResponse(HttpStatus.NOT_FOUND, body));
+        when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
         mvc.perform(patch(baseUrl + "/1")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -257,7 +258,7 @@ class UserControllerIT {
     @Test
     void testUpdateUserWhenDuplicateEmail() throws Exception {
         final String body = loadJson("update_user_duplicate_email.json");
-        when(client.updateUser(1L, userUpdateDto)).thenReturn(makeErrorResponse(HttpStatus.CONFLICT, body));
+        when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
         mvc.perform(patch(baseUrl + "/1")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -319,21 +320,14 @@ class UserControllerIT {
         return Files.readString(resource.getFile().toPath());
     }
 
-    private ResponseEntity<Object> makeOkResponse(final String body) throws JsonProcessingException {
-        return makeResponse(HttpStatus.OK, MediaType.APPLICATION_JSON, body);
-    }
-
-    private ResponseEntity<Object> makeErrorResponse(final HttpStatus status, final String body) throws
+    private HttpClientErrorException makeException(final HttpStatus status, final String body) throws
             JsonProcessingException {
-        return makeResponse(status, MediaType.APPLICATION_PROBLEM_JSON, body);
-    }
-
-    private ResponseEntity<Object> makeResponse(final HttpStatus status, final MediaType contentType,
-            final String body
-    ) throws JsonProcessingException {
-        return ResponseEntity
-                .status(status)
-                .contentType(contentType)
-                .body(mapper.readValue(body, Object.class));
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        final Object o = mapper.readValue(body, Object.class);
+        final HttpClientErrorException exception = HttpClientErrorException.create(status, "", headers, body.getBytes(),
+                StandardCharsets.UTF_8);
+        exception.setBodyConvertFunction(b -> o);
+        return exception;
     }
 }

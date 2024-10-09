@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,51 +25,51 @@ public class ItemRequestController extends HttpRequestResponseLogger {
     private final ItemRequestClient client;
 
     @PostMapping
-    ResponseEntity<Object> createItemRequest(
+    Object createItemRequest(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestBody @Valid final ItemRequestCreateDto dto,
             final HttpServletRequest request
     ) {
         logRequest(request, dto);
-        final ResponseEntity<Object> response = client.createItemRequest(userId, dto);
+        final Object response = client.createItemRequest(userId, dto);
         logResponse(request, response);
         return response;
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<Object> getItemRequest(
+    Object getItemRequest(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest((request));
-        final ResponseEntity<Object> response = client.getItemRequest(userId, id);
+        final Object response = client.getItemRequest(userId, id);
         logResponse(request, response);
         return response;
     }
 
     @GetMapping
-    ResponseEntity<Object> getOwnItemRequests(
+    Object getOwnItemRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
             @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOwnItemRequests(userId, from, size);
+        final Object response = client.getOwnItemRequests(userId, from, size);
         logResponse(request, response);
         return response;
     }
 
     @GetMapping("/all")
-    ResponseEntity<Object> getOthersRequests(
+    Object getOthersRequests(
             @RequestHeader("X-Sharer-User-Id") final long userId,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
             @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getOthersItemRequests(userId, from, size);
+        final Object response = client.getOthersItemRequests(userId, from, size);
         logResponse(request, response);
         return response;
     }

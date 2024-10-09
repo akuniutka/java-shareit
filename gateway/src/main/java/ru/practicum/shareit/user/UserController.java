@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,46 +23,46 @@ class UserController extends HttpRequestResponseLogger {
     private final UserClient client;
 
     @PostMapping
-    public ResponseEntity<Object> createUser(
+    public Object createUser(
             @RequestBody @Valid final UserCreateDto dto,
             final HttpServletRequest request
     ) {
         logRequest(request, dto);
-        final ResponseEntity<Object> response = client.createUser(dto);
-        logResponse(request, response.getBody());
+        final Object response = client.createUser(dto);
+        logResponse(request, response);
         return response;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUser(
+    public Object getUser(
             @PathVariable final long id,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getUser(id);
-        logResponse(request, response.getBody());
+        final Object response = client.getUser(id);
+        logResponse(request, response);
         return response;
     }
 
     @GetMapping
-    public ResponseEntity<Object> getUsers(
+    public Object getUsers(
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.getUsers();
-        logResponse(request, response.getBody());
+        final Object response = client.getUsers();
+        logResponse(request, response);
         return response;
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> updateUser(
+    public Object updateUser(
             @PathVariable final long id,
             @RequestBody @Valid final UserUpdateDto dto,
             final HttpServletRequest request
     ) {
         logRequest(request);
-        final ResponseEntity<Object> response = client.updateUser(id, dto);
-        logResponse(request, response.getBody());
+        final Object response = client.updateUser(id, dto);
+        logResponse(request, response);
         return response;
     }
 

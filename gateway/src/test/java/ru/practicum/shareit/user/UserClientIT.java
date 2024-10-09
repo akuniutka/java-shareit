@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -75,11 +74,9 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.createUser(dto);
+        final Object response = client.createUser(dto);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        final String actual = mapper.writeValueAsString(response);
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -152,11 +149,9 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUser(1L);
+        final Object response = client.getUser(1L);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        final String actual = mapper.writeValueAsString(response);
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -217,11 +212,9 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUsers();
+        final Object response = client.getUsers();
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        final String actual = mapper.writeValueAsString(response);
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -236,11 +229,9 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.getUsers();
+        final Object response = client.getUsers();
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        final String actual = mapper.writeValueAsString(response);
         JSONAssert.assertEquals(actual, body, false);
     }
 
@@ -284,11 +275,9 @@ class UserClientIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final ResponseEntity<Object> response = client.updateUser(1L, dto);
+        final Object response = client.updateUser(1L, dto);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(response.getHeaders().getContentType(), equalTo(MediaType.APPLICATION_JSON));
-        final String actual = mapper.writeValueAsString(response.getBody());
+        final String actual = mapper.writeValueAsString(response);
         JSONAssert.assertEquals(actual, body, false);
     }
 

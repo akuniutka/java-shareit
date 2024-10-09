@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -23,20 +22,20 @@ class UserClient extends BaseClient {
                 .build());
     }
 
-    ResponseEntity<Object> createUser(@Valid final UserCreateDto dto) {
+    Object createUser(@Valid final UserCreateDto dto) {
         Objects.requireNonNull(dto, "Cannot create user: is null");
         return post("", dto);
     }
 
-    ResponseEntity<Object> getUser(final long id) {
+    Object getUser(final long id) {
         return get("/" + id);
     }
 
-    ResponseEntity<Object> getUsers() {
+    Object getUsers() {
         return get("");
     }
 
-    ResponseEntity<Object> updateUser(final long id, @Valid final UserUpdateDto dto) {
+    Object updateUser(final long id, @Valid final UserUpdateDto dto) {
         Objects.requireNonNull(dto, "Cannot update user: is null");
         return patch("/" + id, dto);
     }
