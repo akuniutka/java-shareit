@@ -15,8 +15,6 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.UserService;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,10 +37,6 @@ class BookingServiceImpl implements BookingService {
         Objects.requireNonNull(booking.getItem().getId(), "Cannot create booking: booking.item.id is null");
         Objects.requireNonNull(booking.getBooker(), "Cannot create booking: booking.booker is null");
         Objects.requireNonNull(booking.getBooker().getId(), "Cannot create booking: booking.booker.id is null");
-        final LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        if (booking.getStart().isBefore(now)) {
-            throw new ValidationException("start", "cannot be in past");
-        }
         if (!booking.getEnd().isAfter(booking.getStart())) {
             throw new ValidationException("end", "should be after start");
         }
