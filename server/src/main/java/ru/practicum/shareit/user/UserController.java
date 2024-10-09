@@ -59,13 +59,13 @@ class UserController extends HttpRequestResponseLogger {
     }
 
     @PatchMapping("/{id}")
-    public UserRetrieveDto updateUser(
+    public UserRetrieveDto patchUser(
             @PathVariable final long id,
             @RequestBody @Valid final UserUpdateDto userUpdateDto,
             final HttpServletRequest request
     ) {
         logRequest(request, userUpdateDto);
-        final UserPatch patch = mapper.mapToUser(id, userUpdateDto);
+        final UserPatch patch = mapper.mapToPatch(id, userUpdateDto);
         final UserRetrieveDto dto = mapper.mapToDto(userService.patchUser(patch));
         logResponse(request, dto);
         return dto;

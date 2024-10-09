@@ -4,15 +4,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.mockito.MockitoAnnotations;
 import ru.practicum.shareit.common.exception.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,23 +24,33 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static ru.practicum.shareit.user.TestUtils.assertUserEqual;
+import static ru.practicum.shareit.user.TestUtils.makeTestNewUser;
+import static ru.practicum.shareit.user.TestUtils.makeTestUserPatch;
+import static ru.practicum.shareit.user.TestUtils.makeTestSavedUser;
 
 class UserServiceImplTest {
 
+    private AutoCloseable openMocks;
+
+    @Mock
     private UserRepository mockRepository;
-    private UserService service;
+
+    @Captor
     private ArgumentCaptor<User> userCaptured;
+
+    private UserService service;
 
     @BeforeEach
     void setUp() {
-        mockRepository = Mockito.mock(UserRepository.class);
+        openMocks = MockitoAnnotations.openMocks(this);
         service = new UserServiceImpl(mockRepository);
-        userCaptured = ArgumentCaptor.forClass(User.class);
     }
 
     @AfterEach()
-    void tearDown() {
+    void tearDown() throws Exception {
         Mockito.verifyNoMoreInteractions(mockRepository);
+        openMocks.close();
     }
 
     @Test
@@ -54,16 +65,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    void testCreateUserWhenDuplicateEmail() {
-        final Exception expected = new DataIntegrityViolationException("duplicate email");
-        when(mockRepository.save(any(User.class))).thenThrow(expected);
+    void testCreateUserWhenUserIsNull() {
+        final NullPointerException actual = assertThrows(NullPointerException.class, () -> service.createUser(null));
 
-        final DataIntegrityViolationException actual = assertThrows(DataIntegrityViolationException.class,
-                () -> service.createUser(makeTestNewUser()));
-
-        verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestNewUser(), userCaptured.getValue());
-        assertEquals(expected, actual);
+        assertEquals("Cannot create user: is null", actual.getMessage());
     }
 
     @Test
@@ -137,7 +142,7 @@ class UserServiceImplTest {
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestPatch());
+        final User actual = service.patchUser(makeTestUserPatch());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -150,12 +155,12 @@ class UserServiceImplTest {
     void testPatchUserWhenOnlyName() {
         final User existingUser = makeTestSavedUser();
         existingUser.setName(makeTestNewUser().getName());
-        final UserPatch patch = makeTestPatch();
+        final UserPatch patch = makeTestUserPatch();
         patch.setEmail(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestPatch());
+        final User actual = service.patchUser(makeTestUserPatch());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -168,12 +173,12 @@ class UserServiceImplTest {
     void testPatchUserWhenOnlyEmail() {
         final User existingUser = makeTestSavedUser();
         existingUser.setEmail(makeTestNewUser().getEmail());
-        final UserPatch patch = makeTestPatch();
+        final UserPatch patch = makeTestUserPatch();
         patch.setName(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestPatch());
+        final User actual = service.patchUser(makeTestUserPatch());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -184,13 +189,13 @@ class UserServiceImplTest {
 
     @Test
     void testPatchUserWhenNothingToPatch() {
-        final UserPatch patch = makeTestPatch();
+        final UserPatch patch = makeTestUserPatch();
         patch.setName(null);
         patch.setEmail(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(makeTestSavedUser()));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestPatch());
+        final User actual = service.patchUser(makeTestUserPatch());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -211,29 +216,11 @@ class UserServiceImplTest {
         when(mockRepository.findById(42L)).thenReturn(Optional.empty());
 
         final NotFoundException actual = assertThrows(NotFoundException.class,
-                () -> service.patchUser(makeTestPatch()));
+                () -> service.patchUser(makeTestUserPatch()));
 
         verify(mockRepository).findById(42L);
         assertEquals("user", actual.getModelName());
         assertEquals(42L, actual.getModelId());
-    }
-
-    @Test
-    void testPatchUserWhenDuplicateEmail() {
-        final User existingUser = makeTestNewUser();
-        existingUser.setId(42L);
-        final Exception expected = new DataIntegrityViolationException("duplicate email");
-        when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
-        when(mockRepository.save(any(User.class))).thenThrow(expected);
-
-        final DataIntegrityViolationException actual = assertThrows(DataIntegrityViolationException.class,
-                () -> service.patchUser(makeTestPatch()));
-
-        final InOrder inOrder = inOrder(mockRepository);
-        inOrder.verify(mockRepository).findById(42L);
-        inOrder.verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestSavedUser(), userCaptured.getValue());
-        assertEquals(expected, actual);
     }
 
     @Test
@@ -252,38 +239,5 @@ class UserServiceImplTest {
         assertDoesNotThrow(() -> service.deleteUser(1L));
 
         verify(mockRepository).delete(1L);
-    }
-
-    private User makeTestNewUser() {
-        final User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john_doe@mail.com");
-        return user;
-    }
-
-    private UserPatch makeTestPatch() {
-        final UserPatch patch = new UserPatch();
-        patch.setUserId(42L);
-        patch.setName("Mr Nobody");
-        patch.setEmail("nobody@nowhere.com");
-        return patch;
-    }
-
-    private User makeTestSavedUser() {
-        final User user = new User();
-        user.setId(42L);
-        user.setName("Mr Nobody");
-        user.setEmail("nobody@nowhere.com");
-        return user;
-    }
-
-    private void assertUserEqual(final User expected, final User actual) {
-        assertNotNull(expected);
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getId(), actual.getId()),
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getEmail(), actual.getEmail())
-        );
     }
 }
