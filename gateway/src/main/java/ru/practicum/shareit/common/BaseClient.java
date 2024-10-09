@@ -59,18 +59,12 @@ public abstract class BaseClient {
         return exchange(HttpMethod.PATCH, path, userId, parameters, body);
     }
 
-    protected Object delete(final String path) {
-        return delete(path, null, null);
+    protected void delete(final String path) {
+        delete(path, null);
     }
 
-    protected Object delete(final String path, final Long userId) {
-        return delete(path, userId, null);
-    }
-
-    protected Object delete(final String path, final Long userId,
-            final Map<String, Object> parameters
-    ) {
-        return exchange(HttpMethod.DELETE, path, userId, parameters, null);
+    protected void delete(final String path, final Long userId) {
+        exchange(HttpMethod.DELETE, path, userId, null, null);
     }
 
     private <T> Object exchange(final HttpMethod method, final String path, final Long userId,
