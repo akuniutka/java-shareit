@@ -8,8 +8,10 @@ import java.util.Set;
 @Mapper
 interface CommentMapper {
 
+    @Mapping(target = "item.id", source = "itemId")
+    @Mapping(target = "author.id", source = "userId")
     @Mapping(target = "created", expression = "java(java.time.LocalDateTime.now())")
-    Comment mapToComment(CommentCreateDto dto);
+    Comment mapToComment(Long userId, Long itemId, CommentCreateDto dto);
 
     @Mapping(target = "authorName", source = "author.name")
     CommentRetrieveDto mapToDto(Comment comment);

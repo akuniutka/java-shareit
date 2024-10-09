@@ -24,11 +24,12 @@ class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment addComment(final Comment comment, final long id, final long userId) {
+    public Comment addComment(final Comment comment) {
         Objects.requireNonNull(comment, "Cannot create comment: is null");
-        final List<Booking> bookings = bookingService.findAllCompleteBookingByUserIdAndItemId(userId, id);
+        final List<Booking> bookings = bookingService.findAllCompleteBookingByUserIdAndItemId(
+                comment.getAuthor().getId(), comment.getItem().getId());
         if (bookings.isEmpty()) {
-            throw new ValidationException("id", "no complete bookings of item by user");
+            throw new ValidationException("item.id", "no complete bookings of item by user");
         }
         final Booking booking = bookings.getFirst();
         comment.setItem(booking.getItem());

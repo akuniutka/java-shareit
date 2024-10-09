@@ -195,7 +195,7 @@ class UserClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () ->client.getUser(1L));
+                () -> client.getUser(1L));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
         final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())

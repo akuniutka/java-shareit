@@ -48,15 +48,12 @@ class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(final long id, final User update) {
-        Objects.requireNonNull(update, "Cannot update user: is null");
-        final User user = repository.findById(id).orElseThrow(
-                () -> new NotFoundException(User.class, id)
-        );
-        Optional.ofNullable(update.getName()).ifPresent(user::setName);
-        Optional.ofNullable(update.getEmail()).ifPresent(user::setEmail);
+    public User patchUser(final UserPatch patch) {
+        Objects.requireNonNull(patch, "Cannot patch user: is null");
+        final User user = getUser(patch.getUserId());
+        patchUserInternal(user, patch);
         final User updatedUser = repository.save(user);
-        log.info("Updated user with id = {}: {}", id, updatedUser);
+        log.info("Updated user with id = {}: {}", patch.getUserId(), updatedUser);
         return updatedUser;
     }
 
@@ -68,5 +65,10 @@ class UserServiceImpl implements UserService {
         } else {
             log.info("No user deleted: user with id = {} does not exist", id);
         }
+    }
+
+    private void patchUserInternal(final User user, final UserPatch patch) {
+        Optional.ofNullable(patch.getName()).ifPresent(user::setName);
+        Optional.ofNullable(patch.getEmail()).ifPresent(user::setEmail);
     }
 }

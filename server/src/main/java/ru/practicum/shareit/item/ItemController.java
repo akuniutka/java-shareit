@@ -36,8 +36,8 @@ class ItemController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request, itemCreateDto);
-        final Item item = mapper.mapToItem(itemCreateDto);
-        final ItemRetrieveDto dto = mapper.mapToDto(itemService.createItem(item, userId));
+        final Item item = mapper.mapToItem(userId, itemCreateDto);
+        final ItemRetrieveDto dto = mapper.mapToDto(itemService.createItem(item));
         logResponse(request, dto);
         return dto;
     }
@@ -85,8 +85,8 @@ class ItemController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request, commentCreateDto);
-        final Comment comment = commentMapper.mapToComment(commentCreateDto);
-        final CommentRetrieveDto dto = commentMapper.mapToDto(commentService.addComment(comment, id, userId));
+        final Comment comment = commentMapper.mapToComment(userId, id, commentCreateDto);
+        final CommentRetrieveDto dto = commentMapper.mapToDto(commentService.addComment(comment));
         logResponse(request, dto);
         return dto;
     }

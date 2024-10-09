@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.request.ItemRequestService;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
@@ -29,13 +28,12 @@ class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public Item createItem(final Item item, final long userId) {
+    public Item createItem(final Item item) {
         Objects.requireNonNull(item, "Cannot create item: is null");
-        final User user = userService.getUser(userId);
+        userService.getUser(item.getOwner().getId());
         if (item.getRequest() != null) {
             itemRequestService.getItemRequest(item.getRequest().getId());
         }
-        item.setOwner(user);
         final Item createdItem = repository.save(item);
         log.info("Created item with id = {}: {}", createdItem.getId(), createdItem);
         return createdItem;

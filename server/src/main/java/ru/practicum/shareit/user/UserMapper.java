@@ -9,7 +9,7 @@ interface UserMapper {
 
     User mapToUser(UserCreateDto dto);
 
-    User mapToUser(UserUpdateDto dto);
+    UserPatch mapToUser(Long userId, UserUpdateDto dto);
 
     UserRetrieveDto mapToDto(User user);
 

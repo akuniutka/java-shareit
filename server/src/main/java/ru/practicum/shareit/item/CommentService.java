@@ -4,5 +4,5 @@ import jakarta.validation.Valid;
 
 interface CommentService {
 
-    Comment addComment(@Valid Comment comment, long id, long userId);
+    Comment addComment(@Valid Comment comment);
 }

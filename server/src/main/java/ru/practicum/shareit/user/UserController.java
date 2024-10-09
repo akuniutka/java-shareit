@@ -65,8 +65,8 @@ class UserController extends HttpRequestResponseLogger {
             final HttpServletRequest request
     ) {
         logRequest(request, userUpdateDto);
-        final User user = mapper.mapToUser(userUpdateDto);
-        final UserRetrieveDto dto = mapper.mapToDto(userService.updateUser(id, user));
+        final UserPatch patch = mapper.mapToUser(id, userUpdateDto);
+        final UserRetrieveDto dto = mapper.mapToDto(userService.patchUser(patch));
         logResponse(request, dto);
         return dto;
     }

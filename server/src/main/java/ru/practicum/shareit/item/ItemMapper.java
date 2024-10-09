@@ -10,9 +10,10 @@ import java.util.List;
 @Mapper(uses = CommentMapper.class)
 interface ItemMapper {
 
+    @Mapping(target = "owner.id", source = "userId")
     @Mapping(target = "comments", expression = "java(new java.util.HashSet<>())")
     @Mapping(target = "request", expression = "java(itemRequestFromItemRequestId(dto))")
-    Item mapToItem(ItemCreateDto dto);
+    Item mapToItem(Long userId, ItemCreateDto dto);
 
     Item mapToItem(ItemUpdateDto dto);
 

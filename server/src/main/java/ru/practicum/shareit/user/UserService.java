@@ -14,7 +14,7 @@ public interface UserService {
 
     boolean existsById(long id);
 
-    User updateUser(long id, @Valid User user);
+    User patchUser(@Valid UserPatch patch);
 
     void deleteUser(long id);
 }
