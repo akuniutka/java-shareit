@@ -1,67 +1,30 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
-@Slf4j
-public class ControllerExceptionHandler extends HttpRequestResponseLogger {
-
-    @ExceptionHandler
-    public ProblemDetail handleMethodArgumentNotValidException(
-            final MethodArgumentNotValidException exception,
-            final HttpServletRequest request
-    ) {
-        final Map<String, String> errors = exception.getBindingResult().getFieldErrors().stream()
-                .filter(e -> e.getDefaultMessage() != null)
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage,
-                        (s1, s2) -> s1 + ", " + s2));
-        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-                "Check that data you sent is correct");
-        // TODO: after sprint #16 replace "error" with "errors"
-        response.setProperty("error", errors);
-        log.warn("Model validation errors: {}", errors);
-        logResponse(request, response);
-        return response;
-    }
+public class ControllerExceptionHandler extends BaseExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<Object> handleHttpStatusCodeException(
             final HttpStatusCodeException exception,
             final HttpServletRequest request
     ) {
+        log.warn("Server responded with error status code {}", exception.getMessage());
         final ResponseEntity<Object> response = ResponseEntity
                 .status(exception.getStatusCode())
                 .contentType(Optional.ofNullable(exception.getResponseHeaders())
                         .map(HttpHeaders::getContentType)
                         .orElse(MediaType.APPLICATION_JSON))
                 .body(exception.getResponseBodyAs(Object.class));
-        logResponse(request, response);
-        return response;
-    }
-
-    @ExceptionHandler
-    public ProblemDetail handleThrowable(
-            final Throwable throwable,
-            final HttpServletRequest request
-    ) {
-        log.error(throwable.getMessage(), throwable);
-        final ProblemDetail response = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Please contact site admin");
         logResponse(request, response);
         return response;
     }

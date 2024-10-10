@@ -1,12 +1,14 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-@Slf4j
 public abstract class HttpRequestResponseLogger {
+
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected void logRequest(final HttpServletRequest request) {
         final String queryString = translateQueryString(request);

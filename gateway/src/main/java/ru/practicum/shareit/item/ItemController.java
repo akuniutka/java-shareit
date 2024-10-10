@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,7 +18,6 @@ import ru.practicum.shareit.common.HttpRequestResponseLogger;
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
-@Slf4j
 class ItemController extends HttpRequestResponseLogger {
 
     private final ItemClient client;
@@ -30,7 +28,7 @@ class ItemController extends HttpRequestResponseLogger {
             @RequestBody @Valid final ItemCreateDto dto,
             final HttpServletRequest request
     ) {
-        logResponse(request, dto);
+        logRequest(request, dto);
         final Object response = client.createItem(userId, dto);
         logResponse(request, response);
         return response;
@@ -45,7 +43,7 @@ class ItemController extends HttpRequestResponseLogger {
         logRequest(request);
         final Object response = client.getItem(userId, id);
         logResponse(request, response);
-        return  response;
+        return response;
     }
 
     @GetMapping
@@ -81,7 +79,7 @@ class ItemController extends HttpRequestResponseLogger {
         logRequest(request, dto);
         final Object response = client.addComment(userId, id, dto);
         logResponse(request, response);
-        return  response;
+        return response;
     }
 
     @PatchMapping("/{id}")
@@ -105,6 +103,6 @@ class ItemController extends HttpRequestResponseLogger {
     ) {
         logRequest(request);
         client.deleteItem(userId, id);
-        logRequest(request);
+        logResponse(request);
     }
 }
