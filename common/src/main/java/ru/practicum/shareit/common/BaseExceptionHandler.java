@@ -17,7 +17,7 @@ public abstract class BaseExceptionHandler extends HttpRequestResponseLogger {
             final MethodArgumentNotValidException exception,
             final HttpServletRequest request
     ) {
-        final Map<String, String> errors = exception.getBindingResult().getFieldErrors().stream()
+        final Map<String, String> errors = exception.getFieldErrors().stream()
                 .filter(e -> e.getDefaultMessage() != null)
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage,
                         (s1, s2) -> s1 + ", " + s2));
