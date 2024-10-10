@@ -8,7 +8,19 @@ import java.util.Optional;
 
 public abstract class HttpRequestResponseLogger {
 
-    protected Logger log = LoggerFactory.getLogger(getClass());
+    protected Logger log;
+
+    protected HttpRequestResponseLogger() {
+        this.log = LoggerFactory.getLogger(getClass());
+    }
+
+    public void setLogger(final Logger log) {
+        this.log = log;
+    }
+
+    public Logger getLogger() {
+        return log;
+    }
 
     protected void logRequest(final HttpServletRequest request) {
         final String queryString = translateQueryString(request);
