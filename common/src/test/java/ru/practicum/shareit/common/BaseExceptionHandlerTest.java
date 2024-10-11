@@ -1,17 +1,18 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
 import org.springframework.http.ProblemDetail;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,31 +20,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static ru.practicum.shareit.common.CommonUtils.assertLogs;
 
 class BaseExceptionHandlerTest {
+
+    private static final LogListener logListener = new LogListener(TestExceptionHandler.class);
 
     private AutoCloseable openMocks;
 
     @Mock
     private HttpServletRequest mockHttpRequest;
 
-    @Mock
-    private Logger mockLog;
-
     private BaseExceptionHandler handler;
 
     @BeforeEach
     void setUp() {
         openMocks = MockitoAnnotations.openMocks(this);
-        handler = Mockito.mock(BaseExceptionHandler.class, Mockito.CALLS_REAL_METHODS);
-        handler.setLogger(mockLog);
-        when(mockHttpRequest.getMethod()).thenReturn(null);
-        when(mockHttpRequest.getRequestURI()).thenReturn(null);
-        when(mockHttpRequest.getQueryString()).thenReturn(null);
+        handler = new TestExceptionHandler();
+        when(mockHttpRequest.getMethod()).thenReturn("POST");
+        when(mockHttpRequest.getRequestURI()).thenReturn("http://somehost/home");
+        when(mockHttpRequest.getQueryString()).thenReturn("value=none");
+        logListener.startListen();
+        logListener.reset();
     }
 
     @AfterEach
     void tearDown() throws Exception {
+        logListener.stopListen();
         verify(mockHttpRequest).getMethod();
         verify(mockHttpRequest).getRequestURI();
         verify(mockHttpRequest).getQueryString();
@@ -52,7 +55,7 @@ class BaseExceptionHandlerTest {
     }
 
     @Test
-    void testHandleMethodArgumentNotValidException() {
+    void testHandleMethodArgumentNotValidException() throws JSONException, IOException {
         final MethodArgumentNotValidException mockException = Mockito.mock(MethodArgumentNotValidException.class);
         final FieldError nameLengthError = new FieldError("user", "name", "cannot exceed characters");
         final FieldError charactersError = new FieldError("user", "name", "cannot contain whitespaces");
@@ -69,15 +72,21 @@ class BaseExceptionHandlerTest {
         assertEquals("Check that data you sent is correct", response.getDetail());
         assertNotNull(response.getProperties());
         assertEquals(errors, response.getProperties().get("error"));
+        assertLogs(logListener.getEvents(), "method_argument_not_valid_exception.json", getClass());
     }
 
     @Test
-    void testHandleThrowable() {
+    void testHandleThrowable() throws JSONException, IOException {
         final Throwable throwable = new Throwable("Test message", new Throwable());
 
         final ProblemDetail response = handler.handleThrowable(throwable, mockHttpRequest);
 
         assertEquals(500, response.getStatus());
         assertEquals("Please contact site admin", response.getDetail());
+        assertLogs(logListener.getEvents(), "throwable.json", getClass());
+    }
+
+    private static class TestExceptionHandler extends BaseExceptionHandler {
+
     }
 }

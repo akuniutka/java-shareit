@@ -1,14 +1,12 @@
 package ru.practicum.shareit.item;
 
-//import org.springframework.http.ResponseEntity;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-final class TestUtils {
+final class ItemUtils {
 
-    private TestUtils() {
+    private ItemUtils() {
     }
 
     static ItemCreateDto makeTestItemCreateDto() {

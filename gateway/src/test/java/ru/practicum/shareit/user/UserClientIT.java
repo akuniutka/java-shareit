@@ -9,7 +9,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -18,9 +17,7 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,6 +28,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static ru.practicum.shareit.common.CommonUtils.loadJson;
 
 @RestClientTest(UserClient.class)
 class UserClientIT {
@@ -63,8 +61,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("create_user.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("create_user.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -86,8 +83,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("create_user_duplicate_email.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("create_user_duplicate_email.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -115,8 +111,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("create_user_internal_server_error.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("create_user_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -140,8 +135,7 @@ class UserClientIT {
 
     @Test
     void testGetUser() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_user.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_user.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -157,8 +151,7 @@ class UserClientIT {
 
     @Test
     void testGetUserWhenNotFound() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_user_not_found.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_user_not_found.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -180,8 +173,7 @@ class UserClientIT {
 
     @Test
     void testGetUserWhenInternalServerError() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_user_internal_server_error.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_user_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -203,8 +195,7 @@ class UserClientIT {
 
     @Test
     void testGetUsers() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_users.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_users.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -220,8 +211,7 @@ class UserClientIT {
 
     @Test
     void testGetUsersWhenEmpty() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_users_empty.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_users_empty.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -237,8 +227,7 @@ class UserClientIT {
 
     @Test
     void testGetUsersWhenInternalServerError() throws IOException, JSONException {
-        final File resource = new ClassPathResource("get_users_internal_server_error.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("get_users_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -264,8 +253,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("update_user.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("update_user.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -287,8 +275,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("update_user_duplicate_email.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("update_user_duplicate_email.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -316,8 +303,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("update_user_not_found.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("update_user_not_found.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
@@ -345,8 +331,7 @@ class UserClientIT {
         dto.setName("John Doe");
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
-        final File resource = new ClassPathResource("update_user_internal_server_error.json", getClass()).getFile();
-        final String body = Files.readString(resource.toPath());
+        final String body = loadJson("update_user_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))

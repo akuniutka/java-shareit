@@ -1,6 +1,7 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,17 +10,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.stream.Stream;
 
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static ru.practicum.shareit.common.CommonUtils.assertLogs;
 
 class HttpRequestResponseLoggerTest {
 
-    private static final String METHOD = "method";
+    private static final LogListener logListener =
+            new LogListener(HttpRequestResponseLoggerTest.TestHttpRequestResponseLogger.class);
+
+    private static final String METHOD = "POST";
     private static final String URI = "http://somehost/home";
     private static final String HEADER = "X-Sharer-User-Id";
     private static final String HEADER_VALUE = "42";
@@ -31,117 +35,114 @@ class HttpRequestResponseLoggerTest {
     @Mock
     private HttpServletRequest mockHttpRequest;
 
-    @Mock
-    private Logger mockLog;
-
     private HttpRequestResponseLogger logger;
 
     private static Stream<Arguments> getHeaderAndQueryString() {
         return Stream.of(
-                Arguments.of(null, null),
-                Arguments.of(HEADER_VALUE, null),
-                Arguments.of(null, QUERY_STRING),
-                Arguments.of(HEADER_VALUE, QUERY_STRING)
+                Arguments.of(1, null, null),
+                Arguments.of(2, HEADER_VALUE, null),
+                Arguments.of(3, null, QUERY_STRING),
+                Arguments.of(4, HEADER_VALUE, QUERY_STRING)
         );
     }
 
-    private static Stream<String> getQueryString() {
-        return Stream.of(null, QUERY_STRING);
+    private static Stream<Arguments> getQueryString() {
+        return Stream.of(
+                Arguments.of(1, null),
+                Arguments.of(2, QUERY_STRING)
+        );
     }
 
     private static Stream<Arguments> getQueryStringAndBody() {
         return Stream.of(
-                Arguments.of(null, null),
-                Arguments.of(QUERY_STRING, null),
-                Arguments.of(null, BODY),
-                Arguments.of(QUERY_STRING, BODY)
+                Arguments.of(1, null, null),
+                Arguments.of(2, QUERY_STRING, null),
+                Arguments.of(3, null, BODY),
+                Arguments.of(4, QUERY_STRING, BODY)
         );
     }
 
     @BeforeEach
     void setUp() {
         openMocks = MockitoAnnotations.openMocks(this);
-        logger = Mockito.mock(HttpRequestResponseLogger.class, Mockito.CALLS_REAL_METHODS);
-        logger.setLogger(mockLog);
+        logger = new TestHttpRequestResponseLogger();
         when(mockHttpRequest.getMethod()).thenReturn(METHOD);
         when(mockHttpRequest.getRequestURI()).thenReturn(URI);
+        logListener.startListen();
+        logListener.reset();
     }
 
     @AfterEach
     void tearDown() throws Exception {
+        logListener.stopListen();
         verify(mockHttpRequest).getMethod();
         verify(mockHttpRequest).getRequestURI();
         verify(mockHttpRequest).getQueryString();
-        Mockito.verifyNoMoreInteractions(mockHttpRequest, mockLog);
+        Mockito.verifyNoMoreInteractions(mockHttpRequest);
         openMocks.close();
     }
 
     @ParameterizedTest
     @MethodSource("getHeaderAndQueryString")
-    void testLogRequestWhenNoBody(final String headerValue, final String query) {
-        final String headerStr = headerValue == null ? "" : " (%s: %s)".formatted(HEADER, headerValue);
-        final String queryStr = query == null ? "" : "?" + query;
+    void testLogRequestWhenNoBody(final int caseNumber, final String headerValue, final String query) throws
+            JSONException, IOException {
         when(mockHttpRequest.getHeader(HEADER)).thenReturn(headerValue);
         when(mockHttpRequest.getQueryString()).thenReturn(query);
-        doNothing().when(mockLog).info("Received {} at {}{}{}", METHOD, URI, queryStr, headerStr);
 
         logger.logRequest(mockHttpRequest);
 
         verify(mockHttpRequest).getHeader(HEADER);
-        verify(mockLog).info("Received {} at {}{}{}", METHOD, URI, queryStr, headerStr);
+        assertLogs(logListener.getEvents(), "log_request_no_body_" + caseNumber + ".json", getClass());
     }
 
     @ParameterizedTest
     @MethodSource("getHeaderAndQueryString")
-    void testLogRequestWhenBodyNull(final String headerValue, final String query) {
-        final String headerStr = headerValue == null ? "" : " (%s: %s)".formatted(HEADER, headerValue);
-        final String queryStr = query == null ? "" : "?" + query;
+    void testLogRequestWhenBodyNull(final int caseNumber, final String headerValue, final String query) throws
+            JSONException, IOException {
         when(mockHttpRequest.getHeader(HEADER)).thenReturn(headerValue);
         when(mockHttpRequest.getQueryString()).thenReturn(query);
-        doNothing().when(mockLog).info("Received {} at {}{}: {}{}", METHOD, URI, queryStr, null, headerStr);
 
         logger.logRequest(mockHttpRequest, null);
 
         verify(mockHttpRequest).getHeader(HEADER);
-        verify(mockLog).info("Received {} at {}{}: {}{}", METHOD, URI, queryStr, null, headerStr);
+        assertLogs(logListener.getEvents(), "log_request_null_body_" + caseNumber + ".json", getClass());
     }
 
     @ParameterizedTest
     @MethodSource("getHeaderAndQueryString")
-    void testLogRequestWhenBodyNonNull(final String headerValue, final String query) {
-        final String headerStr = headerValue == null ? "" : " (%s: %s)".formatted(HEADER, headerValue);
-        final String queryStr = query == null ? "" : "?" + query;
+    void testLogRequestWhenBodyNonNull(final int caseNumber, final String headerValue, final String query) throws
+            JSONException, IOException {
         when(mockHttpRequest.getHeader(HEADER)).thenReturn(headerValue);
         when(mockHttpRequest.getQueryString()).thenReturn(query);
-        doNothing().when(mockLog).info("Received {} at {}{}: {}{}", METHOD, URI, queryStr, BODY, headerStr);
 
         logger.logRequest(mockHttpRequest, BODY);
 
         verify(mockHttpRequest).getHeader(HEADER);
-        verify(mockLog).info("Received {} at {}{}: {}{}", METHOD, URI, queryStr, BODY, headerStr);
+        assertLogs(logListener.getEvents(), "log_request_with_body_" + caseNumber + ".json", getClass());
     }
 
     @ParameterizedTest
     @MethodSource("getQueryString")
-    void testLogResponseWhenNoQueryBody(final String query) {
-        final String queryStr = query == null ? "" : "?" + query;
+    void testLogResponseWhenNoBody(final int caseNumber, final String query) throws JSONException, IOException {
         when(mockHttpRequest.getQueryString()).thenReturn(query);
-        doNothing().when(mockLog).info("Responded to {} {}{} with no body", METHOD, URI, queryStr);
 
         logger.logResponse(mockHttpRequest);
 
-        verify(mockLog).info("Responded to {} {}{} with no body", METHOD, URI, queryStr);
+        assertLogs(logListener.getEvents(), "log_response_no_body_" + caseNumber + ".json", getClass());
     }
 
     @ParameterizedTest
     @MethodSource("getQueryStringAndBody")
-    void testLogResponseWithBody(final String query, final String body) {
-        final String queryStr = query == null ? "" : "?" + query;
+    void testLogResponseWithBody(final int caseNumber, final String query, final String body) throws JSONException,
+            IOException {
         when(mockHttpRequest.getQueryString()).thenReturn(query);
-        doNothing().when(mockLog).info("Responded to {} {}{}: {}", METHOD, URI, queryStr, body);
 
         logger.logResponse(mockHttpRequest, body);
 
-        verify(mockLog).info("Responded to {} {}{}: {}", METHOD, URI, queryStr, body);
+        assertLogs(logListener.getEvents(), "log_response_with_body_" + caseNumber + ".json", getClass());
+    }
+
+    private static class TestHttpRequestResponseLogger extends HttpRequestResponseLogger {
+
     }
 }

@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: {\"id\":1}"
+  }
+]

@@ -10,16 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -31,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.common.CommonUtils.loadJson;
 
 @WebMvcTest(controllers = UserController.class)
 class UserControllerIT {
@@ -70,7 +68,7 @@ class UserControllerIT {
 
     @Test
     void testCreateUser() throws Exception {
-        final String body = loadJson("create_user.json");
+        final String body = loadJson("create_user.json", getClass());
         when(client.createUser(userCreateDto)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(post(baseUrl)
@@ -89,7 +87,7 @@ class UserControllerIT {
 
     @Test
     void testCreateUserWhenDuplicateEmail() throws Exception {
-        final String body = loadJson("create_user_duplicate_email.json");
+        final String body = loadJson("create_user_duplicate_email.json", getClass());
         when(client.createUser(userCreateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
         mvc.perform(post(baseUrl)
@@ -109,7 +107,7 @@ class UserControllerIT {
     @Test
     void testCreateUserWhenNoEmail() throws Exception {
         userCreateDto.setEmail(null);
-        final String body = loadJson("create_user_no_email.json");
+        final String body = loadJson("create_user_no_email.json", getClass());
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -125,7 +123,7 @@ class UserControllerIT {
 
     @Test
     void testGetUser() throws Exception {
-        final String body = loadJson("get_user.json");
+        final String body = loadJson("get_user.json", getClass());
         when(client.getUser(1L)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl + "/1")
@@ -141,7 +139,7 @@ class UserControllerIT {
 
     @Test
     void testGetUserWhenNotFound() throws Exception {
-        final String body = loadJson("get_user_not_found.json");
+        final String body = loadJson("get_user_not_found.json", getClass());
         when(client.getUser(1L)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
         mvc.perform(get(baseUrl + "/1")
@@ -157,7 +155,7 @@ class UserControllerIT {
 
     @Test
     void testGetUserWhenWrongIdFormat() throws Exception {
-        final String body = loadJson("get_user_wrong_id_format.json");
+        final String body = loadJson("get_user_wrong_id_format.json", getClass());
 
         mvc.perform(get(baseUrl + "/abc")
                         .accept(MediaType.APPLICATION_JSON))
@@ -170,7 +168,7 @@ class UserControllerIT {
 
     @Test
     void testGetUsers() throws Exception {
-        final String body = loadJson("get_users.json");
+        final String body = loadJson("get_users.json", getClass());
         when(client.getUsers()).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl)
@@ -186,7 +184,7 @@ class UserControllerIT {
 
     @Test
     void testGetUsersWhenEmpty() throws Exception {
-        final String body = loadJson("get_users_empty.json");
+        final String body = loadJson("get_users_empty.json", getClass());
         when(client.getUsers()).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(get(baseUrl)
@@ -202,7 +200,7 @@ class UserControllerIT {
 
     @Test
     void testUpdateUser() throws Exception {
-        final String body = loadJson("update_user.json");
+        final String body = loadJson("update_user.json", getClass());
         when(client.updateUser(1L, userUpdateDto)).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(patch(baseUrl + "/1")
@@ -222,7 +220,7 @@ class UserControllerIT {
     @Test
     void testUpdateUserWhenMalformedEmail() throws Exception {
         userUpdateDto.setEmail("malformed_email");
-        final String body = loadJson("update_user_malformed_email.json");
+        final String body = loadJson("update_user_malformed_email.json", getClass());
 
         mvc.perform(patch(baseUrl + "/1")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -238,7 +236,7 @@ class UserControllerIT {
 
     @Test
     void testUpdateUserWhenNotFound() throws Exception {
-        final String body = loadJson("update_user_not_found.json");
+        final String body = loadJson("update_user_not_found.json", getClass());
         when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
         mvc.perform(patch(baseUrl + "/1")
@@ -257,7 +255,7 @@ class UserControllerIT {
 
     @Test
     void testUpdateUserWhenDuplicateEmail() throws Exception {
-        final String body = loadJson("update_user_duplicate_email.json");
+        final String body = loadJson("update_user_duplicate_email.json", getClass());
         when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
         mvc.perform(patch(baseUrl + "/1")
@@ -276,7 +274,7 @@ class UserControllerIT {
 
     @Test
     void testUpdateUserWhenWrongIdFormat() throws Exception {
-        final String body = loadJson("update_user_wrong_id_format.json");
+        final String body = loadJson("update_user_wrong_id_format.json", getClass());
 
         mvc.perform(patch(baseUrl + "/abc")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -304,7 +302,7 @@ class UserControllerIT {
 
     @Test
     void testDeleteUserWhenWrongIdFormat() throws Exception {
-        final String body = loadJson("delete_user_wrong_id_format.json");
+        final String body = loadJson("delete_user_wrong_id_format.json", getClass());
 
         mvc.perform(delete(baseUrl + "/abc")
                         .accept(MediaType.APPLICATION_JSON))
@@ -313,11 +311,6 @@ class UserControllerIT {
                         status().isInternalServerError(),
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
                         content().json(body, true));
-    }
-
-    private String loadJson(final String filename) throws IOException {
-        final ClassPathResource resource = new ClassPathResource(filename, getClass());
-        return Files.readString(resource.getFile().toPath());
     }
 
     private HttpClientErrorException makeException(final HttpStatus status, final String body) throws

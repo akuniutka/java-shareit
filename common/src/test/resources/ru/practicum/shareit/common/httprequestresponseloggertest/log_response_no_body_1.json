@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home with no body"
+  }
+]

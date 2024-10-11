@@ -16,12 +16,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ru.practicum.shareit.item.TestUtils.assertCommentCreateDtoEqual;
-import static ru.practicum.shareit.item.TestUtils.assertItemCreateDtoEqual;
-import static ru.practicum.shareit.item.TestUtils.assertItemUpdateDtoEqual;
-import static ru.practicum.shareit.item.TestUtils.makeTestCommentCreateDto;
-import static ru.practicum.shareit.item.TestUtils.makeTestItemCreateDto;
-import static ru.practicum.shareit.item.TestUtils.makeTestItemUpdateDto;
+import static ru.practicum.shareit.item.ItemUtils.assertCommentCreateDtoEqual;
+import static ru.practicum.shareit.item.ItemUtils.assertItemCreateDtoEqual;
+import static ru.practicum.shareit.item.ItemUtils.assertItemUpdateDtoEqual;
+import static ru.practicum.shareit.item.ItemUtils.makeTestCommentCreateDto;
+import static ru.practicum.shareit.item.ItemUtils.makeTestItemCreateDto;
+import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
 
 class ItemControllerTest {
 

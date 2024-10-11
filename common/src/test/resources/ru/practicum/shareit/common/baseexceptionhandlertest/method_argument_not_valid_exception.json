@@ -1,0 +1,10 @@
+[
+  {
+    "level": "WARN",
+    "message": "Model validation errors: {name=cannot exceed characters, cannot contain whitespaces}"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Bad Request', status=400, detail='Check that data you sent is correct', instance='null', properties='{error={name=cannot exceed characters, cannot contain whitespaces}}']"
+  }
+]

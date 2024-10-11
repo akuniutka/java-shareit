@@ -10,10 +10,6 @@ public abstract class HttpRequestResponseLogger {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    public void setLogger(final Logger log) {
-        this.log = log;
-    }
-
     protected void logRequest(final HttpServletRequest request) {
         final String queryString = translateQueryString(request);
         final String userHeader = translateUserHeader(request);
