@@ -18,7 +18,6 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,6 +27,8 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static ru.practicum.shareit.common.CommonUtils.getBody;
+import static ru.practicum.shareit.common.CommonUtils.getContentType;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
 
 @RestClientTest(UserClient.class)
@@ -35,6 +36,8 @@ class UserClientIT {
 
     @Value("${shareit-server.url}")
     private String serverUrl;
+
+    private String baseUrl;
 
     @Autowired
     private UserClient client;
@@ -47,6 +50,7 @@ class UserClientIT {
 
     @BeforeEach
     void setUp() {
+        baseUrl = serverUrl + "/users";
         server.reset();
     }
 
@@ -62,7 +66,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -74,7 +78,7 @@ class UserClientIT {
         final Object response = client.createUser(dto);
 
         final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(actual, body, false);
+        JSONAssert.assertEquals(body, actual, false);
     }
 
     @Test
@@ -84,7 +88,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_duplicate_email.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -97,12 +101,8 @@ class UserClientIT {
                 () -> client.createUser(dto));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.CONFLICT));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
@@ -112,7 +112,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -125,18 +125,14 @@ class UserClientIT {
                 () -> client.createUser(dto));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
     void testGetUser() throws IOException, JSONException {
         final String body = loadJson("get_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.OK)
@@ -146,13 +142,13 @@ class UserClientIT {
         final Object response = client.getUser(1L);
 
         final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(actual, body, false);
+        JSONAssert.assertEquals(body, actual, false);
     }
 
     @Test
     void testGetUserWhenNotFound() throws IOException, JSONException {
         final String body = loadJson("get_user_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
@@ -163,18 +159,14 @@ class UserClientIT {
                 () -> client.getUser(1L));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
     void testGetUserWhenInternalServerError() throws IOException, JSONException {
         final String body = loadJson("get_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -185,18 +177,14 @@ class UserClientIT {
                 () -> client.getUser(1L));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
     void testGetUsers() throws IOException, JSONException {
         final String body = loadJson("get_users.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.OK)
@@ -206,13 +194,13 @@ class UserClientIT {
         final Object response = client.getUsers();
 
         final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(actual, body, false);
+        JSONAssert.assertEquals(body, actual, false);
     }
 
     @Test
     void testGetUsersWhenEmpty() throws IOException, JSONException {
         final String body = loadJson("get_users_empty.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.OK)
@@ -222,13 +210,13 @@ class UserClientIT {
         final Object response = client.getUsers();
 
         final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(actual, body, false);
+        JSONAssert.assertEquals(body, actual, false);
     }
 
     @Test
     void testGetUsersWhenInternalServerError() throws IOException, JSONException {
         final String body = loadJson("get_users_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -239,12 +227,8 @@ class UserClientIT {
                 () -> client.getUsers());
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
@@ -254,7 +238,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -266,7 +250,7 @@ class UserClientIT {
         final Object response = client.updateUser(1L, dto);
 
         final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(actual, body, false);
+        JSONAssert.assertEquals(body, actual, false);
     }
 
     @Test
@@ -276,7 +260,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_duplicate_email.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -289,12 +273,8 @@ class UserClientIT {
                 () -> client.updateUser(1L, dto));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.CONFLICT));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
@@ -304,7 +284,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -317,12 +297,8 @@ class UserClientIT {
                 () -> client.updateUser(1L, dto));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
@@ -332,7 +308,7 @@ class UserClientIT {
         dto.setEmail("john_doe@mail.com");
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -345,21 +321,35 @@ class UserClientIT {
                 () -> client.updateUser(1L, dto));
 
         assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        final MediaType contentType = Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-        assertThat(contentType, equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        final String actual = exception.getResponseBodyAsString();
-        JSONAssert.assertEquals(actual, body, false);
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 
     @Test
     void testDeleteUser() {
-        server.expect(ExpectedCount.once(), requestTo(serverUrl + "/users/1"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
                 .andExpect(method(HttpMethod.DELETE))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
                 .andRespond(withStatus(HttpStatus.OK));
 
         client.deleteUser(1L);
+    }
+
+    @Test
+    void testDeleteUserWhenInternalServerError() throws IOException, JSONException {
+        final String body = loadJson("delete_user_internal_server_error.json", getClass());
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+                .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                        .body(body));
+
+        final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
+                () -> client.deleteUser(1L));
+
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
+        JSONAssert.assertEquals(body, getBody(exception), false);
     }
 }

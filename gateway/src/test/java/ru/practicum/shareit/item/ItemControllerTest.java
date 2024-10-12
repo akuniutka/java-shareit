@@ -25,6 +25,8 @@ import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
 
 class ItemControllerTest {
 
+    private static final String HEADER = "X-Sharer-User-Id";
+
     private AutoCloseable openMocks;
 
     @Mock
@@ -57,10 +59,10 @@ class ItemControllerTest {
         openMocks = MockitoAnnotations.openMocks(this);
         controller = new ItemController(client);
         testResponse = "test response";
-        when(mockHttpRequest.getMethod()).thenReturn(null);
-        when(mockHttpRequest.getRequestURI()).thenReturn(null);
-        when(mockHttpRequest.getQueryString()).thenReturn(null);
-        when(mockHttpRequest.getHeader("X-Sharer-User-Id")).thenReturn(null);
+        when(mockHttpRequest.getMethod()).thenReturn("POST");
+        when(mockHttpRequest.getRequestURI()).thenReturn("http://somehost/home");
+        when(mockHttpRequest.getQueryString()).thenReturn("value=none");
+        when(mockHttpRequest.getHeader(HEADER)).thenReturn("42");
     }
 
     @AfterEach
@@ -68,7 +70,7 @@ class ItemControllerTest {
         Mockito.verify(mockHttpRequest, Mockito.times(2)).getMethod();
         Mockito.verify(mockHttpRequest, Mockito.times(2)).getRequestURI();
         Mockito.verify(mockHttpRequest, Mockito.times(2)).getQueryString();
-        Mockito.verify(mockHttpRequest).getHeader("X-Sharer-User-Id");
+        Mockito.verify(mockHttpRequest).getHeader(HEADER);
         Mockito.verifyNoMoreInteractions(client);
         openMocks.close();
     }

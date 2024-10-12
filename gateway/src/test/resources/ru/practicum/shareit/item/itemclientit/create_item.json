@@ -1,0 +1,10 @@
+{
+  "id": 1,
+  "name": "The thing",
+  "description": "Something from out there",
+  "available": false,
+  "requestId": 42,
+  "lastBooking": null,
+  "nextBooking": null,
+  "comments": []
+}
