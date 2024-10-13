@@ -5,25 +5,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpStatusCodeException;
+import ru.practicum.shareit.common.AbstractClientIT;
 
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static ru.practicum.shareit.booking.BookingUtils.makeTestBookingCreateDto;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
@@ -33,22 +25,13 @@ import static ru.practicum.shareit.common.ErrorResponseMatchers.isInternalServer
 import static ru.practicum.shareit.common.ErrorResponseMatchers.isNotFound;
 
 @RestClientTest(BookingClient.class)
-class BookingClientIT {
+class BookingClientIT extends AbstractClientIT {
 
-    private static final String HEADER = "X-Sharer-User-Id";
     private static final long USER_ID = 42L;
     private static final long BOOKING_ID = 1L;
     private static final String BOOKING_STATE = "all";
     private static final int FROM = 0;
     private static final int SIZE = 10;
-
-    @Value("${shareit-server.url}")
-    private String serverUrl;
-
-    private String baseUrl;
-
-    @Autowired
-    private MockRestServiceServer server;
 
     @Autowired
     private ObjectMapper mapper;
@@ -58,13 +41,13 @@ class BookingClientIT {
 
     @BeforeEach
     void setUp() {
-        baseUrl = serverUrl + "/bookings";
-        server.reset();
+        basePath = "/bookings";
+        mockServer.reset();
     }
 
     @AfterEach
     void tearDown() {
-        server.verify();
+        mockServer.verify();
     }
 
     @Test
@@ -72,12 +55,7 @@ class BookingClientIT {
         final BookingCreateDto dto = makeTestBookingCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_booking.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -100,12 +78,7 @@ class BookingClientIT {
         final BookingCreateDto dto = makeTestBookingCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_booking_user_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -121,12 +94,7 @@ class BookingClientIT {
         final BookingCreateDto dto = makeTestBookingCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_booking_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -140,10 +108,7 @@ class BookingClientIT {
     @Test
     void testGetBooking() throws IOException {
         final String body = loadJson("get_booking.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/" + BOOKING_ID, USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -156,10 +121,7 @@ class BookingClientIT {
     @Test
     void testGetBookingWhenNotFound() throws IOException {
         final String body = loadJson("get_booking_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/" + BOOKING_ID, USER_ID)
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -173,10 +135,7 @@ class BookingClientIT {
     @Test
     void testGetBookingWhenInternalServerError() throws IOException {
         final String body = loadJson("get_booking_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/" + BOOKING_ID, USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -190,11 +149,7 @@ class BookingClientIT {
     @Test
     void testGetUserBookings() throws IOException {
         final String body = loadJson("get_user_bookings.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -207,11 +162,7 @@ class BookingClientIT {
     @Test
     void testGetUserBookingsWhenEmpty() throws IOException {
         final String body = loadJson("get_user_bookings_empty.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -224,11 +175,7 @@ class BookingClientIT {
     @Test
     void testGetUserBookingsWhenInternalServerError() throws IOException {
         final String body = loadJson("get_user_bookings_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -242,11 +189,7 @@ class BookingClientIT {
     @Test
     void testGetOwnerBookings() throws IOException {
         final String body = loadJson("get_owner_bookings.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -259,11 +202,7 @@ class BookingClientIT {
     @Test
     void testGetOwnerBookingsWhenEmpty() throws IOException {
         final String body = loadJson("get_owner_bookings_empty.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -276,11 +215,7 @@ class BookingClientIT {
     @Test
     void testGetOwnerBookingsWhenNoItems() throws IOException {
         final String body = loadJson("get_owner_bookings_no_items.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.FORBIDDEN)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -294,11 +229,7 @@ class BookingClientIT {
     @Test
     void testGetOwnerBookingsWhenInternalServerError() throws IOException {
         final String body = loadJson("get_owner_bookings_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl
-                        + "/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE)))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectGet("/owner?state=%s&from=%d&size=%d".formatted(BOOKING_STATE, FROM, SIZE), USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -312,10 +243,7 @@ class BookingClientIT {
     @Test
     void testProcessBookingRequest() throws IOException {
         final String body = loadJson("process_booking.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID + "?approved=true"))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectPatch("/" + BOOKING_ID + "?approved=true", USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -328,10 +256,7 @@ class BookingClientIT {
     @Test
     void testProcessBookingRequestWhenNotOwner() throws IOException {
         final String body = loadJson("process_booking_not_owner.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID + "?approved=true"))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectPatch("/" + BOOKING_ID + "?approved=true", USER_ID)
                 .andRespond(withStatus(HttpStatus.FORBIDDEN)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -345,10 +270,7 @@ class BookingClientIT {
     @Test
     void testProcessBookingRequestWhenInternalServerError() throws IOException {
         final String body = loadJson("process_booking_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + BOOKING_ID + "?approved=true"))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(USER_ID)))
+        expectPatch("/" + BOOKING_ID + "?approved=true", USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));

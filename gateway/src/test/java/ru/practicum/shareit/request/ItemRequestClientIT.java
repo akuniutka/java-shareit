@@ -9,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpStatusCodeException;
-import ru.practicum.shareit.common.BaseTestClient;
+import ru.practicum.shareit.common.AbstractClientIT;
 
 import java.io.IOException;
 
@@ -24,7 +24,7 @@ import static ru.practicum.shareit.common.ErrorResponseMatchers.isNotFound;
 import static ru.practicum.shareit.request.ItemRequestUtils.makeTestItemRequestCreateDto;
 
 @RestClientTest(ItemRequestClient.class)
-class ItemRequestClientIT extends BaseTestClient {
+class ItemRequestClientIT extends AbstractClientIT {
 
     private static final long USER_ID = 42L;
     private static final long ITEM_REQUEST_ID = 1L;

@@ -14,7 +14,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 
-public abstract class BaseTestClient {
+public abstract class AbstractClientIT {
 
     protected static final String HEADER = "X-Sharer-User-Id";
 
@@ -27,19 +27,31 @@ public abstract class BaseTestClient {
     protected String basePath = "";
 
     protected ResponseActions expectPost(final String jsonBody) {
-        return expectBase("")
+        return expectPost("", jsonBody);
+    }
+
+    protected ResponseActions expectPost(long userId, final String jsonBody) {
+        return expectPost("", userId, jsonBody);
+    }
+
+    protected ResponseActions expectPost(final String path, final String jsonBody) {
+        return expectBase(path)
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(jsonBody, true));
     }
 
-    protected ResponseActions expectPost(long userId, final String jsonBody) {
-        return expectPost(jsonBody)
+    protected ResponseActions expectPost(final String path, final long userId, final String jsonBody) {
+        return expectPost(path, jsonBody)
                 .andExpect(header(HEADER, String.valueOf(userId)));
     }
 
-    private ResponseActions expectGet() {
+    protected ResponseActions expectGet() {
         return expectGet("");
+    }
+
+    protected ResponseActions expectGet(long userId) {
+        return expectGet("", userId);
     }
 
     protected ResponseActions expectGet(final String path) {
@@ -47,12 +59,35 @@ public abstract class BaseTestClient {
                 .andExpect(method(HttpMethod.GET));
     }
 
-    protected ResponseActions expectGet(long userId) {
-        return expectGet("", userId);
-    }
-
     protected ResponseActions expectGet(final String path, long userId) {
         return expectGet(path)
+                .andExpect(header(HEADER, String.valueOf(userId)));
+    }
+
+    protected ResponseActions expectPatch(final String path, final String jsonBody) {
+        return expectBase(path)
+                .andExpect(method(HttpMethod.PATCH))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(jsonBody, true));
+    }
+
+    protected ResponseActions expectPatch(final String path, final long userId) {
+        return expectBase(path)
+                .andExpect(header(HEADER, String.valueOf(userId)));
+    }
+
+    protected ResponseActions expectPatch(final String path, final long userId, final String jsonBody) {
+        return expectPatch(path, jsonBody)
+                .andExpect(header(HEADER, String.valueOf(userId)));
+    }
+
+    protected ResponseActions expectDelete(final String path) {
+        return expectBase(path)
+                .andExpect(method(HttpMethod.DELETE));
+    }
+
+    protected ResponseActions expectDelete(final String path, final long userId) {
+        return expectDelete(path)
                 .andExpect(header(HEADER, String.valueOf(userId)));
     }
 

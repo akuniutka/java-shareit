@@ -5,25 +5,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpStatusCodeException;
+import ru.practicum.shareit.common.AbstractClientIT;
 
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
 import static ru.practicum.shareit.common.EqualToJson.equalToJson;
@@ -34,33 +26,25 @@ import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
 @RestClientTest(UserClient.class)
-class UserClientIT {
+class UserClientIT extends AbstractClientIT {
 
     private static final long USER_ID = 1L;
-
-    @Value("${shareit-server.url}")
-    private String serverUrl;
-
-    private String baseUrl;
-
-    @Autowired
-    private UserClient client;
-
-    @Autowired
-    private MockRestServiceServer server;
 
     @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
+    private UserClient client;
+
     @BeforeEach
     void setUp() {
-        baseUrl = serverUrl + "/users";
-        server.reset();
+        basePath = "/users";
+        mockServer.reset();
     }
 
     @AfterEach
     void tearDown() {
-        server.verify();
+        mockServer.verify();
     }
 
     @Test
@@ -68,11 +52,7 @@ class UserClientIT {
         final UserCreateDto dto = makeTestUserCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(dtoJson)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -95,11 +75,7 @@ class UserClientIT {
         final UserCreateDto dto = makeTestUserCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_duplicate_email.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(dtoJson)
                 .andRespond(withStatus(HttpStatus.CONFLICT)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -115,11 +91,7 @@ class UserClientIT {
         final UserCreateDto dto = makeTestUserCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPost(dtoJson)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -133,9 +105,7 @@ class UserClientIT {
     @Test
     void testGetUser() throws IOException {
         final String body = loadJson("get_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -148,9 +118,7 @@ class UserClientIT {
     @Test
     void testGetUserWhenNotFound() throws IOException {
         final String body = loadJson("get_user_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -164,9 +132,7 @@ class UserClientIT {
     @Test
     void testGetUserWhenInternalServerError() throws IOException {
         final String body = loadJson("get_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -180,9 +146,7 @@ class UserClientIT {
     @Test
     void testGetUsers() throws IOException {
         final String body = loadJson("get_users.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet()
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -195,9 +159,7 @@ class UserClientIT {
     @Test
     void testGetUsersWhenEmpty() throws IOException {
         final String body = loadJson("get_users_empty.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet()
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -210,9 +172,7 @@ class UserClientIT {
     @Test
     void testGetUsersWhenInternalServerError() throws IOException {
         final String body = loadJson("get_users_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl))
-                .andExpect(method(HttpMethod.GET))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectGet()
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -228,11 +188,7 @@ class UserClientIT {
         final UserUpdateDto dto = makeTestUserUpdateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPatch("/" + USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
@@ -255,11 +211,7 @@ class UserClientIT {
         final UserUpdateDto dto = makeTestUserUpdateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_duplicate_email.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPatch("/" + USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.CONFLICT)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -275,11 +227,7 @@ class UserClientIT {
         final UserUpdateDto dto = makeTestUserUpdateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + USER_ID))
-                .andExpect(method(HttpMethod.PATCH))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(dtoJson, true))
+        expectPatch("/" + USER_ID, dtoJson)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
@@ -292,20 +240,16 @@ class UserClientIT {
 
     @Test
     void testDeleteUser() {
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
-                .andExpect(method(HttpMethod.DELETE))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectDelete("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.OK));
 
-        client.deleteUser(1L);
+        client.deleteUser(USER_ID);
     }
 
     @Test
     void testDeleteUserWhenInternalServerError() throws IOException {
         final String body = loadJson("delete_user_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/1"))
-                .andExpect(method(HttpMethod.DELETE))
-                .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
+        expectDelete("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
