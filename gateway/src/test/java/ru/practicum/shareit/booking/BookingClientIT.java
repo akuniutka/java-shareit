@@ -17,7 +17,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,9 +28,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static ru.practicum.shareit.booking.BookingUtils.makeTestBookingCreateDto;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
 import static ru.practicum.shareit.common.EqualToJson.equalToJson;
-import static ru.practicum.shareit.common.HasContentType.hasContentType;
-import static ru.practicum.shareit.common.HasJsonBody.hasJsonBody;
-import static ru.practicum.shareit.common.HasStatus.hasStatus;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isForbidden;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isInternalServerError;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isNotFound;
 
 @RestClientTest(BookingClient.class)
 class BookingClientIT {
@@ -114,10 +113,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.createBooking(USER_ID, dto));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.NOT_FOUND),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isNotFound(body));
     }
 
     @Test
@@ -138,10 +134,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.createBooking(USER_ID, dto));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.INTERNAL_SERVER_ERROR),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
@@ -174,10 +167,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getBooking(USER_ID, BOOKING_ID));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.NOT_FOUND),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isNotFound(body));
     }
 
     @Test
@@ -194,10 +184,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getBooking(USER_ID, BOOKING_ID));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.INTERNAL_SERVER_ERROR),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
@@ -249,10 +236,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getUserBookings(USER_ID, BOOKING_STATE, FROM, SIZE));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.INTERNAL_SERVER_ERROR),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
@@ -304,10 +288,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getOwnerBookings(USER_ID, BOOKING_STATE, FROM, SIZE));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.FORBIDDEN),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isForbidden(body));
     }
 
     @Test
@@ -325,10 +306,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getOwnerBookings(USER_ID, BOOKING_STATE, FROM, SIZE));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.INTERNAL_SERVER_ERROR),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
@@ -361,10 +339,7 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.processBookingRequest(USER_ID, BOOKING_ID, true));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.FORBIDDEN),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isForbidden(body));
     }
 
     @Test
@@ -381,9 +356,6 @@ class BookingClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.processBookingRequest(USER_ID, BOOKING_ID, true));
 
-        assertThat(exception, allOf(
-                hasStatus(HttpStatus.INTERNAL_SERVER_ERROR),
-                hasContentType(MediaType.APPLICATION_PROBLEM_JSON),
-                hasJsonBody(body)));
+        assertThat(exception, isInternalServerError(body));
     }
 }

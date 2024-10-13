@@ -4,14 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Optional;
 
 public final class CommonUtils {
 
@@ -31,15 +27,5 @@ public final class CommonUtils {
         final String expected = loadJson(filename, clazz);
         final String actual = mapper.writeValueAsString(events);
         JSONAssert.assertEquals(expected, actual, false);
-    }
-
-    public static MediaType getContentType(final HttpStatusCodeException exception) {
-        return Optional.ofNullable(exception.getResponseHeaders())
-                .map(HttpHeaders::getContentType)
-                .orElse(null);
-    }
-
-    public static String getBody(final HttpStatusCodeException exception) {
-        return exception.getResponseBodyAsString();
     }
 }

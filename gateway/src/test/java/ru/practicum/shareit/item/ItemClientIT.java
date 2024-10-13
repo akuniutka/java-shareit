@@ -1,11 +1,9 @@
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -27,9 +25,11 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static ru.practicum.shareit.common.CommonUtils.getBody;
-import static ru.practicum.shareit.common.CommonUtils.getContentType;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
+import static ru.practicum.shareit.common.EqualToJson.equalToJson;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isBadRequest;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isInternalServerError;
+import static ru.practicum.shareit.common.ErrorResponseMatchers.isNotFound;
 import static ru.practicum.shareit.item.ItemUtils.makeTestCommentCreateDto;
 import static ru.practicum.shareit.item.ItemUtils.makeTestItemCreateDto;
 import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
@@ -65,7 +65,7 @@ class ItemClientIT {
     }
 
     @Test
-    void testCreateItem() throws IOException, JSONException {
+    void testCreateItem() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
         final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
@@ -82,8 +82,7 @@ class ItemClientIT {
 
         final Object response = client.createItem(userId, dto);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
@@ -95,7 +94,7 @@ class ItemClientIT {
     }
 
     @Test
-    void createItemWhenUserNotFound() throws IOException, JSONException {
+    void createItemWhenUserNotFound() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
         final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
@@ -113,13 +112,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.createItem(userId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isNotFound(body));
     }
 
     @Test
-    void createItemWhenInternalServerError() throws IOException, JSONException {
+    void createItemWhenInternalServerError() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
         final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
@@ -137,13 +134,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.createItem(userId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
-    void testGetItem() throws IOException, JSONException {
+    void testGetItem() throws IOException {
         final long userId = 42L;
         final long itemId = 1L;
         final String body = loadJson("get_item.json", getClass());
@@ -157,12 +152,11 @@ class ItemClientIT {
 
         final Object response = client.getItem(userId, itemId);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
-    void testGetItemWhenNotFound() throws IOException, JSONException {
+    void testGetItemWhenNotFound() throws IOException {
         final long userId = 42L;
         final long itemId = 1L;
         final String body = loadJson("get_item_not_found.json", getClass());
@@ -177,13 +171,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getItem(userId, itemId));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isNotFound(body));
     }
 
     @Test
-    void testGetItemWhenInternalServerError() throws IOException, JSONException {
+    void testGetItemWhenInternalServerError() throws IOException {
         final long userId = 42L;
         final long itemId = 1L;
         final String body = loadJson("get_item_internal_server_error.json", getClass());
@@ -198,13 +190,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getItem(userId, itemId));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
-    void testGetItems() throws IOException, JSONException {
+    void testGetItems() throws IOException {
         final long userId = 42L;
         final String body = loadJson("get_items.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
@@ -217,12 +207,11 @@ class ItemClientIT {
 
         final Object response = client.getItems(userId);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
-    void testGetItemsWhenEmpty() throws IOException, JSONException {
+    void testGetItemsWhenEmpty() throws IOException {
         final long userId = 42L;
         final String body = loadJson("get_items_empty.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
@@ -235,12 +224,11 @@ class ItemClientIT {
 
         final Object response = client.getItems(userId);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
-    void testGetItemsWhenInternalServerError() throws IOException, JSONException {
+    void testGetItemsWhenInternalServerError() throws IOException {
         final long userId = 42L;
         final String body = loadJson("get_items_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
@@ -254,13 +242,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getItems(userId));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
-    void testGetItemsWithText() throws IOException, JSONException {
+    void testGetItemsWithText() throws IOException {
         final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text.json", getClass());
@@ -274,12 +260,11 @@ class ItemClientIT {
 
         final Object response = client.getItems(userId, text);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
-    void testGetItemsWithTextWhenEmpty() throws IOException, JSONException {
+    void testGetItemsWithTextWhenEmpty() throws IOException {
         final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text_empty.json", getClass());
@@ -293,12 +278,11 @@ class ItemClientIT {
 
         final Object response = client.getItems(userId, text);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
-    void testGetItemsWithTextWhenInternalServerError() throws IOException, JSONException {
+    void testGetItemsWithTextWhenInternalServerError() throws IOException {
         final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text_internal_server_error.json", getClass());
@@ -313,13 +297,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.getItems(userId, text));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
-    void testAddComment() throws IOException, JSONException {
+    void testAddComment() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -337,8 +319,7 @@ class ItemClientIT {
 
         final Object response = client.addComment(userId, itemId, dto);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
@@ -350,7 +331,7 @@ class ItemClientIT {
     }
 
     @Test
-    void testAddCommentWhenBookingNotFound() throws IOException, JSONException {
+    void testAddCommentWhenBookingNotFound() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -369,13 +350,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.addComment(userId, itemId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isBadRequest(body));
     }
 
     @Test
-    void testAddCommentWhenInternalServerError() throws IOException, JSONException {
+    void testAddCommentWhenInternalServerError() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -394,13 +373,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.addComment(userId, itemId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
-    void testUpdateItem() throws IOException, JSONException {
+    void testUpdateItem() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -418,8 +395,7 @@ class ItemClientIT {
 
         final Object response = client.updateItem(userId, itemId, dto);
 
-        final String actual = mapper.writeValueAsString(response);
-        JSONAssert.assertEquals(body, actual, false);
+        assertThat(response, equalToJson(body));
     }
 
     @Test
@@ -431,7 +407,7 @@ class ItemClientIT {
     }
 
     @Test
-    void testUpdateItemWhenNotFound() throws IOException, JSONException {
+    void testUpdateItemWhenNotFound() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -450,13 +426,11 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.updateItem(userId, itemId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isNotFound(body));
     }
 
     @Test
-    void testUpdateItemWhenInternalServerError() throws IOException, JSONException {
+    void testUpdateItemWhenInternalServerError() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
         final long userId = 42L;
         final long itemId = 1L;
@@ -475,9 +449,7 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.updateItem(userId, itemId, dto));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 
     @Test
@@ -494,7 +466,7 @@ class ItemClientIT {
     }
 
     @Test
-    void testDeleteItemWhenInternalServerError() throws IOException, JSONException {
+    void testDeleteItemWhenInternalServerError() throws IOException {
         final long userId = 42L;
         final long itemId = 1L;
         final String body = loadJson("delete_item_internal_server_error.json", getClass());
@@ -509,8 +481,6 @@ class ItemClientIT {
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
                 () -> client.deleteItem(userId, itemId));
 
-        assertThat(exception.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThat(getContentType(exception), equalTo(MediaType.APPLICATION_PROBLEM_JSON));
-        JSONAssert.assertEquals(body, getBody(exception), false);
+        assertThat(exception, isInternalServerError(body));
     }
 }

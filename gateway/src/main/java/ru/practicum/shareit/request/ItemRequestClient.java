@@ -10,6 +10,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.common.BaseClient;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Validated
@@ -26,6 +27,7 @@ class ItemRequestClient extends BaseClient {
     }
 
     Object createItemRequest(final long userId, @Valid final ItemRequestCreateDto dto) {
+        Objects.requireNonNull(dto, "Cannot create item request: is null");
         return post("", userId, dto);
     }
 
