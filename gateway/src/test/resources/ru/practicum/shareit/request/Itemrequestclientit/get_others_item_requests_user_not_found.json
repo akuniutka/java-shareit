@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Check that id of user is correct (you sent 42)",
+  "instance": "/requests/all?from=0&size=10"
+}

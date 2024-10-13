@@ -38,6 +38,8 @@ import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
 class ItemClientIT {
 
     private static final String HEADER = "X-Sharer-User-Id";
+    private static final long USER_ID = 42L;
+    private static final long ITEM_ID = 1L;
 
     @Value("${shareit-server.url}")
     private String serverUrl;
@@ -67,20 +69,19 @@ class ItemClientIT {
     @Test
     void testCreateItem() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
-        final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_item.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.createItem(userId, dto);
+        final Object response = client.createItem(USER_ID, dto);
 
         assertThat(response, equalToJson(body));
     }
@@ -88,7 +89,7 @@ class ItemClientIT {
     @Test
     void testCreateItemWhenNull() {
         final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> client.createItem(1L, null));
+                () -> client.createItem(USER_ID, null));
 
         assertThat(exception.getMessage(), equalTo("Cannot create item: is null"));
     }
@@ -96,13 +97,12 @@ class ItemClientIT {
     @Test
     void createItemWhenUserNotFound() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
-        final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_item_user_not_found.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
@@ -110,7 +110,7 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.createItem(userId, dto));
+                () -> client.createItem(USER_ID, dto));
 
         assertThat(exception, isNotFound(body));
     }
@@ -118,13 +118,12 @@ class ItemClientIT {
     @Test
     void createItemWhenInternalServerError() throws IOException {
         final ItemCreateDto dto = makeTestItemCreateDto();
-        final long userId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_item_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -132,170 +131,158 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.createItem(userId, dto));
+                () -> client.createItem(USER_ID, dto));
 
         assertThat(exception, isInternalServerError(body));
     }
 
     @Test
     void testGetItem() throws IOException {
-        final long userId = 42L;
-        final long itemId = 1L;
         final String body = loadJson("get_item.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.getItem(userId, itemId);
+        final Object response = client.getItem(USER_ID, ITEM_ID);
 
         assertThat(response, equalToJson(body));
     }
 
     @Test
     void testGetItemWhenNotFound() throws IOException {
-        final long userId = 42L;
-        final long itemId = 1L;
         final String body = loadJson("get_item_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.getItem(userId, itemId));
+                () -> client.getItem(USER_ID, ITEM_ID));
 
         assertThat(exception, isNotFound(body));
     }
 
     @Test
     void testGetItemWhenInternalServerError() throws IOException {
-        final long userId = 42L;
-        final long itemId = 1L;
         final String body = loadJson("get_item_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.getItem(userId, itemId));
+                () -> client.getItem(USER_ID, ITEM_ID));
 
         assertThat(exception, isInternalServerError(body));
     }
 
     @Test
     void testGetItems() throws IOException {
-        final long userId = 42L;
         final String body = loadJson("get_items.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.getItems(userId);
+        final Object response = client.getItems(USER_ID);
 
         assertThat(response, equalToJson(body));
     }
 
     @Test
     void testGetItemsWhenEmpty() throws IOException {
-        final long userId = 42L;
         final String body = loadJson("get_items_empty.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.getItems(userId);
+        final Object response = client.getItems(USER_ID);
 
         assertThat(response, equalToJson(body));
     }
 
     @Test
     void testGetItemsWhenInternalServerError() throws IOException {
-        final long userId = 42L;
         final String body = loadJson("get_items_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.getItems(userId));
+                () -> client.getItems(USER_ID));
 
         assertThat(exception, isInternalServerError(body));
     }
 
     @Test
     void testGetItemsWithText() throws IOException {
-        final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl + "/search?text=" + text))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.getItems(userId, text);
+        final Object response = client.getItems(USER_ID, text);
 
         assertThat(response, equalToJson(body));
     }
 
     @Test
     void testGetItemsWithTextWhenEmpty() throws IOException {
-        final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text_empty.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl + "/search?text=" + text))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.getItems(userId, text);
+        final Object response = client.getItems(USER_ID, text);
 
         assertThat(response, equalToJson(body));
     }
 
     @Test
     void testGetItemsWithTextWhenInternalServerError() throws IOException {
-        final long userId = 42L;
         final String text = "thing";
         final String body = loadJson("get_items_with_text_internal_server_error.json", getClass());
         server.expect(ExpectedCount.once(), requestTo(baseUrl + "/search?text=" + text))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.getItems(userId, text));
+                () -> client.getItems(USER_ID, text));
 
         assertThat(exception, isInternalServerError(body));
     }
@@ -303,21 +290,19 @@ class ItemClientIT {
     @Test
     void testAddComment() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_comment.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId + "/comment"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID + "/comment"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.addComment(userId, itemId, dto);
+        final Object response = client.addComment(USER_ID, ITEM_ID, dto);
 
         assertThat(response, equalToJson(body));
     }
@@ -325,7 +310,7 @@ class ItemClientIT {
     @Test
     void testAddCommentWhenNull() {
         final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> client.addComment(42L, 1L, null));
+                () -> client.addComment(USER_ID, ITEM_ID, null));
 
         assertThat(exception.getMessage(), equalTo("Cannot create comment: is null"));
     }
@@ -333,14 +318,12 @@ class ItemClientIT {
     @Test
     void testAddCommentWhenBookingNotFound() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_comment_booking_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId + "/comment"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID + "/comment"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST)
@@ -348,7 +331,7 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.addComment(userId, itemId, dto));
+                () -> client.addComment(USER_ID, ITEM_ID, dto));
 
         assertThat(exception, isBadRequest(body));
     }
@@ -356,14 +339,12 @@ class ItemClientIT {
     @Test
     void testAddCommentWhenInternalServerError() throws IOException {
         final CommentCreateDto dto = makeTestCommentCreateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_comment_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId + "/comment"))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID + "/comment"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -371,7 +352,7 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.addComment(userId, itemId, dto));
+                () -> client.addComment(USER_ID, ITEM_ID, dto));
 
         assertThat(exception, isInternalServerError(body));
     }
@@ -379,21 +360,19 @@ class ItemClientIT {
     @Test
     void testUpdateItem() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_item.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body));
 
-        final Object response = client.updateItem(userId, itemId, dto);
+        final Object response = client.updateItem(USER_ID, ITEM_ID, dto);
 
         assertThat(response, equalToJson(body));
     }
@@ -401,7 +380,7 @@ class ItemClientIT {
     @Test
     void testUpdateItemWhenNull() {
         final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> client.updateItem(42L, 1L, null));
+                () -> client.updateItem(USER_ID, ITEM_ID, null));
 
         assertThat(exception.getMessage(), equalTo("Cannot update item: is null"));
     }
@@ -409,14 +388,12 @@ class ItemClientIT {
     @Test
     void testUpdateItemWhenNotFound() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_item_not_found.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
@@ -424,7 +401,7 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.updateItem(userId, itemId, dto));
+                () -> client.updateItem(USER_ID, ITEM_ID, dto));
 
         assertThat(exception, isNotFound(body));
     }
@@ -432,14 +409,12 @@ class ItemClientIT {
     @Test
     void testUpdateItemWhenInternalServerError() throws IOException {
         final ItemUpdateDto dto = makeTestItemUpdateDto();
-        final long userId = 42L;
-        final long itemId = 1L;
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_item_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(dtoJson, true))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -447,39 +422,35 @@ class ItemClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.updateItem(userId, itemId, dto));
+                () -> client.updateItem(USER_ID, ITEM_ID, dto));
 
         assertThat(exception, isInternalServerError(body));
     }
 
     @Test
     void testDeleteItem() {
-        final long userId = 42L;
-        final long itemId = 1L;
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.DELETE))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.OK));
 
-        client.deleteItem(userId, itemId);
+        client.deleteItem(USER_ID, ITEM_ID);
     }
 
     @Test
     void testDeleteItemWhenInternalServerError() throws IOException {
-        final long userId = 42L;
-        final long itemId = 1L;
         final String body = loadJson("delete_item_internal_server_error.json", getClass());
-        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + itemId))
+        server.expect(ExpectedCount.once(), requestTo(baseUrl + "/" + ITEM_ID))
                 .andExpect(method(HttpMethod.DELETE))
                 .andExpect(header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(header(HEADER, String.valueOf(userId)))
+                .andExpect(header(HEADER, String.valueOf(USER_ID)))
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.deleteItem(userId, itemId));
+                () -> client.deleteItem(USER_ID, ITEM_ID));
 
         assertThat(exception, isInternalServerError(body));
     }

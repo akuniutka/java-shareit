@@ -3,7 +3,7 @@
   "name": "The thing",
   "description": "Something from out there",
   "available": false,
-  "requestId": 42,
+  "requestId": 13,
   "lastBooking": null,
   "nextBooking": null,
   "comments": []
