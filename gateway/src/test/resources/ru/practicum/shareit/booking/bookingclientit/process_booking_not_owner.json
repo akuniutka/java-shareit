@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Forbidden",
+  "status": 403,
+  "detail": "Not authorized",
+  "instance": "/bookings/1?approved=true"
+}

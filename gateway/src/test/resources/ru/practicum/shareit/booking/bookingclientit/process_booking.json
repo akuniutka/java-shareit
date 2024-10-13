@@ -1,0 +1,13 @@
+{
+  "id": 1,
+  "item": {
+    "id": 13,
+    "name": "The thing"
+  },
+  "booker": {
+    "id": 42
+  },
+  "start": "2000-07-01T13:10:25",
+  "end": "2000-07-31T12:50:55",
+  "status": "APPROVED"
+}
