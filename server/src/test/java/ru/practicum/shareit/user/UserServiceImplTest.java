@@ -24,10 +24,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ru.practicum.shareit.user.TestUtils.assertUserEqual;
-import static ru.practicum.shareit.user.TestUtils.makeTestNewUser;
-import static ru.practicum.shareit.user.TestUtils.makeTestUserPatch;
-import static ru.practicum.shareit.user.TestUtils.makeTestSavedUser;
+import static ru.practicum.shareit.user.UserUtils.assertUserEqual;
+import static ru.practicum.shareit.common.CommonUtils.makeTestNewUser;
+import static ru.practicum.shareit.common.CommonUtils.makeTestSavedUser;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserPatch;
 
 class UserServiceImplTest {
 

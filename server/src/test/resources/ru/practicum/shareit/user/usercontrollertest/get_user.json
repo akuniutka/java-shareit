@@ -1,0 +1,10 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home?value=none (X-Sharer-User-Id: 42)"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: UserRetrieveDto(id=1, name=John Doe, email=john_doe@mail.com)"
+  }
+]
