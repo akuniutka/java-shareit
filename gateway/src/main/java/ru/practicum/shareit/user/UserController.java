@@ -58,7 +58,7 @@ class UserController extends HttpRequestResponseLogger {
             @RequestBody @Valid final UserUpdateDto dto,
             final HttpServletRequest request
     ) {
-        logRequest(request);
+        logRequest(request, dto);
         final Object response = client.updateUser(id, dto);
         logResponse(request, response);
         return response;
