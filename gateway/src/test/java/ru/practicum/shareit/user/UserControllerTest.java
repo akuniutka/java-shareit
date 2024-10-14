@@ -24,7 +24,7 @@ import static ru.practicum.shareit.user.UserUtils.deepEqualTo;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
-public class UserControllerTest extends AbstractControllerTest {
+class UserControllerTest extends AbstractControllerTest {
 
     private static final LogListener logListener = new LogListener(UserController.class);
 

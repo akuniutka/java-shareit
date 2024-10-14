@@ -1,8 +1,10 @@
 package ru.practicum.shareit.item;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
+
+import java.util.Objects;
 
 final class ItemUtils {
 
@@ -18,29 +20,10 @@ final class ItemUtils {
         return dto;
     }
 
-    static void assertItemCreateDtoEqual(final ItemCreateDto expected, final ItemCreateDto actual) {
-        assertNotNull(expected);
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getAvailable(), actual.getAvailable()),
-                () -> assertEquals(expected.getRequestId(), actual.getRequestId())
-        );
-    }
-
     static CommentCreateDto makeTestCommentCreateDto() {
         final CommentCreateDto dto = new CommentCreateDto();
-        dto.setText("This is first comment");
+        dto.setText("This is the first comment");
         return dto;
-    }
-
-    static void assertCommentCreateDtoEqual(final CommentCreateDto expected, final CommentCreateDto actual) {
-        assertNotNull(expected);
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getText(), actual.getText())
-        );
     }
 
     static ItemUpdateDto makeTestItemUpdateDto() {
@@ -51,13 +34,62 @@ final class ItemUtils {
         return dto;
     }
 
-    static void assertItemUpdateDtoEqual(final ItemUpdateDto expected, final ItemUpdateDto actual) {
-        assertNotNull(expected);
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getName(), actual.getName()),
-                () -> assertEquals(expected.getDescription(), actual.getDescription()),
-                () -> assertEquals(expected.getAvailable(), actual.getAvailable())
-        );
+    static Matcher<ItemCreateDto> deepEqualTo(final ItemCreateDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final ItemCreateDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final ItemCreateDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getName(), actual.getName())
+                        && Objects.equals(expected.getDescription(), actual.getDescription())
+                        && Objects.equals(expected.getAvailable(), actual.getAvailable())
+                        && Objects.equals(expected.getRequestId(), actual.getRequestId());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
+    }
+
+    static Matcher<CommentCreateDto> deepEqualTo(final CommentCreateDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final CommentCreateDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final CommentCreateDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getText(), actual.getText());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
+    }
+
+    static Matcher<ItemUpdateDto> deepEqualTo(final ItemUpdateDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final ItemUpdateDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final ItemUpdateDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getName(), actual.getName())
+                        && Objects.equals(expected.getDescription(), actual.getDescription())
+                        && Objects.equals(expected.getAvailable(), actual.getAvailable());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
     }
 }

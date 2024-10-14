@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,148 +8,149 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import ru.practicum.shareit.common.AbstractControllerTest;
+import ru.practicum.shareit.common.LogListener;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.IOException;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ru.practicum.shareit.item.ItemUtils.assertCommentCreateDtoEqual;
-import static ru.practicum.shareit.item.ItemUtils.assertItemCreateDtoEqual;
-import static ru.practicum.shareit.item.ItemUtils.assertItemUpdateDtoEqual;
+import static ru.practicum.shareit.common.CommonUtils.assertLogs;
+import static ru.practicum.shareit.item.ItemUtils.deepEqualTo;
 import static ru.practicum.shareit.item.ItemUtils.makeTestCommentCreateDto;
 import static ru.practicum.shareit.item.ItemUtils.makeTestItemCreateDto;
 import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
 
-class ItemControllerTest {
+class ItemControllerTest extends AbstractControllerTest {
 
-    private static final String HEADER = "X-Sharer-User-Id";
+    private static final LogListener logListener = new LogListener(ItemController.class);
 
-    private AutoCloseable openMocks;
+    private static final long USER_ID = 42L;
+    private static final long ITEM_ID = 1L;
+    private static final String SEARCH_TEXT = "text";
 
     @Mock
     private ItemClient client;
 
-    @Mock
-    private HttpServletRequest mockHttpRequest;
+    @Captor
+    private ArgumentCaptor<ItemCreateDto> itemCreateDtoCaptor;
 
     @Captor
-    private ArgumentCaptor<ItemCreateDto> itemCreateDtoCaptured;
+    private ArgumentCaptor<CommentCreateDto> commentCreateDtoCaptor;
 
     @Captor
-    private ArgumentCaptor<CommentCreateDto> commentCreateDtoCaptured;
+    private ArgumentCaptor<ItemUpdateDto> itemUpdateDtoCaptor;
 
     @Captor
-    private ArgumentCaptor<ItemUpdateDto> itemUpdateDtoCaptured;
+    private ArgumentCaptor<Long> userIdCaptor;
 
     @Captor
-    private ArgumentCaptor<Long> userIdCaptured;
-
-    @Captor
-    private ArgumentCaptor<Long> itemIdCaptured;
+    private ArgumentCaptor<Long> itemIdCaptor;
 
     private ItemController controller;
 
-    private Object testResponse;
-
+    @Override
     @BeforeEach
-    void setUp() {
-        openMocks = MockitoAnnotations.openMocks(this);
+    protected void setUp() {
+        super.setUp();
         controller = new ItemController(client);
-        testResponse = "test response";
-        when(mockHttpRequest.getMethod()).thenReturn("POST");
-        when(mockHttpRequest.getRequestURI()).thenReturn("http://somehost/home");
-        when(mockHttpRequest.getQueryString()).thenReturn("value=none");
-        when(mockHttpRequest.getHeader(HEADER)).thenReturn("42");
+        logListener.startListen();
+        logListener.reset();
     }
 
+    @Override
     @AfterEach
-    void tearDown() throws Exception {
-        Mockito.verify(mockHttpRequest, Mockito.times(2)).getMethod();
-        Mockito.verify(mockHttpRequest, Mockito.times(2)).getRequestURI();
-        Mockito.verify(mockHttpRequest, Mockito.times(2)).getQueryString();
-        Mockito.verify(mockHttpRequest).getHeader(HEADER);
+    protected void tearDown() throws Exception {
+        logListener.stopListen();
         Mockito.verifyNoMoreInteractions(client);
-        openMocks.close();
+        super.tearDown();
     }
 
     @Test
-    void testCreateItem() {
-        when(client.createItem(eq(1L), any(ItemCreateDto.class))).thenReturn(testResponse);
+    void testCreateItem() throws JSONException, IOException {
+        when(client.createItem(any(long.class), any(ItemCreateDto.class))).thenReturn(testResponse);
 
-        final Object actual = controller.createItem(1L, makeTestItemCreateDto(), mockHttpRequest);
+        final Object actual = controller.createItem(USER_ID, makeTestItemCreateDto(), mockHttpRequest);
 
-        verify(client).createItem(userIdCaptured.capture(), itemCreateDtoCaptured.capture());
-        assertEquals(1L, userIdCaptured.getValue());
-        assertItemCreateDtoEqual(makeTestItemCreateDto(), itemCreateDtoCaptured.getValue());
-        assertEquals(testResponse, actual);
+        verify(client).createItem(userIdCaptor.capture(), itemCreateDtoCaptor.capture());
+        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
+        assertThat(itemCreateDtoCaptor.getValue(), deepEqualTo(makeTestItemCreateDto()));
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "create_item.json", getClass());
     }
 
     @Test
-    void testGetItem() {
-        when(client.getItem(1L, 42L)).thenReturn(testResponse);
+    void testGetItem() throws JSONException, IOException {
+        when(client.getItem(USER_ID, ITEM_ID)).thenReturn(testResponse);
 
-        final Object actual = controller.getItem(1L, 42L, mockHttpRequest);
+        final Object actual = controller.getItem(USER_ID, ITEM_ID, mockHttpRequest);
 
-        verify(client).getItem(1L, 42L);
-        assertEquals(testResponse, actual);
+        verify(client).getItem(USER_ID, ITEM_ID);
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "get_item.json", getClass());
     }
 
     @Test
-    void testGetItems() {
-        when(client.getItems(1L)).thenReturn(testResponse);
+    void testGetItems() throws JSONException, IOException {
+        when(client.getItems(USER_ID)).thenReturn(testResponse);
 
-        final Object actual = controller.getItems(1L, mockHttpRequest);
+        final Object actual = controller.getItems(USER_ID, mockHttpRequest);
 
-        verify(client).getItems(1L);
-        assertEquals(testResponse, actual);
+        verify(client).getItems(USER_ID);
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "get_items.json", getClass());
     }
 
     @Test
-    void testGetItemsWithText() {
-        when(client.getItems(1L, "text")).thenReturn(testResponse);
+    void testGetItemsWithText() throws JSONException, IOException {
+        when(client.getItems(USER_ID, SEARCH_TEXT)).thenReturn(testResponse);
 
-        final Object actual = controller.getItems(1L, "text", mockHttpRequest);
+        final Object actual = controller.getItems(USER_ID, SEARCH_TEXT, mockHttpRequest);
 
-        verify(client).getItems(1L, "text");
-        assertEquals(testResponse, actual);
+        verify(client).getItems(USER_ID, SEARCH_TEXT);
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "get_items_with_test.json", getClass());
     }
 
     @Test
-    void testAddComment() {
-        when(client.addComment(eq(1L), eq(42L), any(CommentCreateDto.class))).thenReturn(testResponse);
+    void testAddComment() throws JSONException, IOException {
+        when(client.addComment(any(long.class), any(long.class), any(CommentCreateDto.class))).thenReturn(testResponse);
 
-        final Object actual = controller.addComment(1L, 42L, makeTestCommentCreateDto(), mockHttpRequest);
+        final Object actual = controller.addComment(USER_ID, ITEM_ID, makeTestCommentCreateDto(), mockHttpRequest);
 
-        verify(client).addComment(userIdCaptured.capture(), itemIdCaptured.capture(),
-                commentCreateDtoCaptured.capture());
-        assertEquals(1L, userIdCaptured.getValue());
-        assertEquals(42L, itemIdCaptured.getValue());
-        assertCommentCreateDtoEqual(makeTestCommentCreateDto(), commentCreateDtoCaptured.getValue());
-        assertEquals(testResponse, actual);
+        verify(client).addComment(userIdCaptor.capture(), itemIdCaptor.capture(), commentCreateDtoCaptor.capture());
+        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
+        assertThat(itemIdCaptor.getValue(), equalTo(ITEM_ID));
+        assertThat(commentCreateDtoCaptor.getValue(), deepEqualTo(makeTestCommentCreateDto()));
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "add_comment.json", getClass());
     }
 
     @Test
-    void testUpdateItem() {
-        when(client.updateItem(eq(1L), eq(42L), any(ItemUpdateDto.class))).thenReturn(testResponse);
+    void testUpdateItem() throws JSONException, IOException {
+        when(client.updateItem(any(long.class), any(long.class), any(ItemUpdateDto.class))).thenReturn(testResponse);
 
-        final Object actual = controller.updateItem(1L, 42L, makeTestItemUpdateDto(), mockHttpRequest);
+        final Object actual = controller.updateItem(USER_ID, ITEM_ID, makeTestItemUpdateDto(), mockHttpRequest);
 
-        verify(client).updateItem(userIdCaptured.capture(), itemIdCaptured.capture(), itemUpdateDtoCaptured.capture());
-        assertEquals(1L, userIdCaptured.getValue());
-        assertEquals(42L, itemIdCaptured.getValue());
-        assertItemUpdateDtoEqual(makeTestItemUpdateDto(), itemUpdateDtoCaptured.getValue());
-        assertEquals(testResponse, actual);
+        verify(client).updateItem(userIdCaptor.capture(), itemIdCaptor.capture(), itemUpdateDtoCaptor.capture());
+        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
+        assertThat(itemIdCaptor.getValue(), equalTo(ITEM_ID));
+        assertThat(itemUpdateDtoCaptor.getValue(), deepEqualTo(makeTestItemUpdateDto()));
+        assertThat(actual, equalTo(testResponse));
+        assertLogs(logListener.getEvents(), "update_item.json", getClass());
     }
 
     @Test
-    void testDeleteItem() {
-        doNothing().when(client).deleteItem(1L, 42L);
+    void testDeleteItem() throws JSONException, IOException {
+        doNothing().when(client).deleteItem(USER_ID, ITEM_ID);
 
-        controller.deleteItem(1L, 42L, mockHttpRequest);
+        controller.deleteItem(USER_ID, ITEM_ID, mockHttpRequest);
 
-        verify(client).deleteItem(1L, 42L);
+        verify(client).deleteItem(USER_ID, ITEM_ID);
+        assertLogs(logListener.getEvents(), "delete_item.json", getClass());
     }
 }

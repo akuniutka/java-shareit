@@ -1,0 +1,10 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home?value=none: ItemUpdateDto(name=The thing, description=Something from out there, available=false) (X-Sharer-User-Id: 42)"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: test response"
+  }
+]

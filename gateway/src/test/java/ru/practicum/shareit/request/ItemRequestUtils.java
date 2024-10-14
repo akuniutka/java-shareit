@@ -1,8 +1,10 @@
 package ru.practicum.shareit.request;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
+
+import java.util.Objects;
 
 final class ItemRequestUtils {
 
@@ -15,13 +17,21 @@ final class ItemRequestUtils {
         return dto;
     }
 
-    static void assertItemRequestCreateDtoEqual(final ItemRequestCreateDto expected,
-            final ItemRequestCreateDto actual
-    ) {
-        assertNotNull(expected);
-        assertNotNull(actual);
-        assertAll(
-                () -> assertEquals(expected.getDescription(), actual.getDescription())
-        );
+    static Matcher<ItemRequestCreateDto> deepEqualTo(final ItemRequestCreateDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final ItemRequestCreateDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final ItemRequestCreateDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getDescription(), actual.getDescription());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
     }
 }
