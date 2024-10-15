@@ -16,6 +16,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,7 +73,7 @@ class ItemControllerTest extends AbstractControllerTest {
 
     @Test
     void testCreateItem() throws JSONException, IOException {
-        when(client.createItem(any(long.class), any(ItemCreateDto.class))).thenReturn(testResponse);
+        when(client.createItem(anyLong(), any(ItemCreateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.createItem(USER_ID, makeTestItemCreateDto(), mockHttpRequest);
 
@@ -118,7 +119,7 @@ class ItemControllerTest extends AbstractControllerTest {
 
     @Test
     void testAddComment() throws JSONException, IOException {
-        when(client.addComment(any(long.class), any(long.class), any(CommentCreateDto.class))).thenReturn(testResponse);
+        when(client.addComment(anyLong(), anyLong(), any(CommentCreateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.addComment(USER_ID, ITEM_ID, makeTestCommentCreateDto(), mockHttpRequest);
 
@@ -132,7 +133,7 @@ class ItemControllerTest extends AbstractControllerTest {
 
     @Test
     void testUpdateItem() throws JSONException, IOException {
-        when(client.updateItem(any(long.class), any(long.class), any(ItemUpdateDto.class))).thenReturn(testResponse);
+        when(client.updateItem(anyLong(), anyLong(), any(ItemUpdateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.updateItem(USER_ID, ITEM_ID, makeTestItemUpdateDto(), mockHttpRequest);
 

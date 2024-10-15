@@ -16,6 +16,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.booking.BookingUtils.deepEqualTo;
@@ -63,7 +64,7 @@ class BookingControllerTest extends AbstractControllerTest {
 
     @Test
     void testCreateBooking() throws JSONException, IOException {
-        when(client.createBooking(any(long.class), any(BookingCreateDto.class))).thenReturn(testResponse);
+        when(client.createBooking(anyLong(), any(BookingCreateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.createBooking(USER_ID, makeTestBookingCreateDto(), mockHttpRequest);
 

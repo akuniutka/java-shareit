@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
@@ -138,7 +139,7 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Test
     void testPatchUser() throws JSONException, IOException {
-        when(mockMapper.mapToPatch(any(long.class), any(UserUpdateDto.class))).thenReturn(makeTestUserPatch());
+        when(mockMapper.mapToPatch(anyLong(), any(UserUpdateDto.class))).thenReturn(makeTestUserPatch());
         when(mockService.patchUser(any(UserPatch.class))).thenReturn(makeTestSavedUser());
         when(mockMapper.mapToDto(any(User.class))).thenReturn(makeTestUserRetrieveDto());
 

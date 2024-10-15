@@ -16,6 +16,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -97,7 +98,7 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Test
     void testUpdateUser() throws JSONException, IOException {
-        when(client.updateUser(any(long.class), any(UserUpdateDto.class))).thenReturn(testResponse);
+        when(client.updateUser(anyLong(), any(UserUpdateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.updateUser(USER_ID, makeTestUserUpdateDto(), mockHttpRequest);
 

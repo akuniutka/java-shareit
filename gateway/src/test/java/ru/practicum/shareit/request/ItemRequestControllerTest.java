@@ -16,6 +16,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.common.CommonUtils.assertLogs;
@@ -61,7 +62,7 @@ class ItemRequestControllerTest extends AbstractControllerTest {
 
     @Test
     void testCreateItemRequest() throws JSONException, IOException {
-        when(client.createItemRequest(any(long.class), any(ItemRequestCreateDto.class))).thenReturn(testResponse);
+        when(client.createItemRequest(anyLong(), any(ItemRequestCreateDto.class))).thenReturn(testResponse);
 
         final Object actual = controller.createItemRequest(USER_ID, makeTestItemRequestCreateDto(), mockHttpRequest);
 
