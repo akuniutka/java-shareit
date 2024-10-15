@@ -4,8 +4,6 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,27 +14,20 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.common.CommonUtils.assertLogs;
-import static ru.practicum.shareit.common.CommonUtils.deepEqualTo;
-import static ru.practicum.shareit.common.CommonUtils.makeTestNewComment;
-import static ru.practicum.shareit.common.CommonUtils.makeTestNewItem;
-import static ru.practicum.shareit.common.CommonUtils.makeTestSavedComment;
-import static ru.practicum.shareit.common.CommonUtils.makeTestSavedItem;
-import static ru.practicum.shareit.item.ItemUtils.deepEqualTo;
-import static ru.practicum.shareit.item.ItemUtils.makeTestCommentCreateDto;
-import static ru.practicum.shareit.item.ItemUtils.makeTestCommentRetrieveDto;
-import static ru.practicum.shareit.item.ItemUtils.makeTestItemCreateDto;
-import static ru.practicum.shareit.item.ItemUtils.makeTestItemRetrieveDto;
-import static ru.practicum.shareit.item.ItemUtils.makeTestItemUpdateDto;
+import static ru.practicum.shareit.item.ItemUtils.makeCommentCreateDtoProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeCommentProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeCommentRetrieveDtoProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeItemCreateDtoProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeItemProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeItemRetrieveDtoProxy;
+import static ru.practicum.shareit.item.ItemUtils.makeItemUpdateDtoProxy;
 
 class ItemControllerTest extends AbstractControllerTest {
 
@@ -57,30 +48,6 @@ class ItemControllerTest extends AbstractControllerTest {
 
     @Mock
     private CommentMapper commentMapper;
-
-    @Captor
-    private ArgumentCaptor<ItemCreateDto> itemCreateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<ItemUpdateDto> itemUpdateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<Item> itemCaptor;
-
-    @Captor
-    private ArgumentCaptor<List<Item>> itemsCaptor;
-
-    @Captor
-    private ArgumentCaptor<Long> userIdCaptor;
-
-    @Captor
-    private ArgumentCaptor<Long> itemIdCaptor;
-
-    @Captor
-    private ArgumentCaptor<CommentCreateDto> commentCreateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<Comment> commentCaptor;
 
     private InOrder inOrder;
 
@@ -106,114 +73,87 @@ class ItemControllerTest extends AbstractControllerTest {
 
     @Test
     void textCreateItem() throws JSONException, IOException {
-        when(mockMapper.mapToItem(anyLong(), any(ItemCreateDto.class))).thenReturn(makeTestNewItem());
-        when(mockService.createItem(any(Item.class))).thenReturn(makeTestSavedItem());
-        when(mockMapper.mapToDto(any(Item.class))).thenReturn(makeTestItemRetrieveDto());
+        when(mockMapper.mapToItem(USER_ID, makeItemCreateDtoProxy())).thenReturn(makeItemProxy());
+        when(mockService.createItem(makeItemProxy())).thenReturn(makeItemProxy());
+        when(mockMapper.mapToDto(makeItemProxy())).thenReturn(makeItemRetrieveDtoProxy());
 
-        final ItemRetrieveDto actual = controller.createItem(USER_ID, makeTestItemCreateDto(), mockHttpRequest);
+        final ItemRetrieveDto actual = controller.createItem(USER_ID, makeItemCreateDtoProxy(), mockHttpRequest);
 
-        inOrder.verify(mockMapper).mapToItem(userIdCaptor.capture(), itemCreateDtoCaptor.capture());
-        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
-        assertThat(itemCreateDtoCaptor.getValue(), deepEqualTo(makeTestItemCreateDto()));
-        inOrder.verify(mockService).createItem(itemCaptor.capture());
-        assertThat(itemCaptor.getValue(), deepEqualTo(makeTestNewItem()));
-        inOrder.verify(mockMapper).mapToDto(itemCaptor.capture());
-        assertThat(itemCaptor.getValue(), deepEqualTo(makeTestSavedItem()));
-        assertThat(actual, deepEqualTo(makeTestItemRetrieveDto()));
+        inOrder.verify(mockMapper).mapToItem(USER_ID, makeItemCreateDtoProxy());
+        inOrder.verify(mockService).createItem(makeItemProxy());
+        inOrder.verify(mockMapper).mapToDto(makeItemProxy());
+        assertThat(actual, equalTo(makeItemRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "create_item.json", getClass());
     }
 
     @Test
     void testGetItem() throws JSONException, IOException {
-        when(mockService.getItem(ITEM_ID, USER_ID)).thenReturn(makeTestSavedItem());
-        when(mockMapper.mapToDto(any(Item.class))).thenReturn(makeTestItemRetrieveDto());
+        when(mockService.getItem(ITEM_ID, USER_ID)).thenReturn(makeItemProxy());
+        when(mockMapper.mapToDto(makeItemProxy())).thenReturn(makeItemRetrieveDtoProxy());
 
         final ItemRetrieveDto actual = controller.getItem(USER_ID, ITEM_ID, mockHttpRequest);
 
         inOrder.verify(mockService).getItem(ITEM_ID, USER_ID);
-        inOrder.verify(mockMapper).mapToDto(itemCaptor.capture());
-        assertThat(itemCaptor.getValue(), deepEqualTo(makeTestSavedItem()));
-        assertThat(actual, deepEqualTo(makeTestItemRetrieveDto()));
+        inOrder.verify(mockMapper).mapToDto(makeItemProxy());
+        assertThat(actual, equalTo(makeItemRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "get_item.json", getClass());
     }
 
     @Test
     void testGetItems() throws JSONException, IOException {
-        when(mockService.getItems(USER_ID)).thenReturn(List.of(makeTestSavedItem()));
-        when(mockMapper.mapToDto(anyList())).thenReturn(List.of(makeTestItemRetrieveDto()));
+        when(mockService.getItems(USER_ID)).thenReturn(List.of(makeItemProxy()));
+        when(mockMapper.mapToDto(List.of(makeItemProxy()))).thenReturn(List.of(makeItemRetrieveDtoProxy()));
 
         final List<ItemRetrieveDto> actual = controller.getItems(USER_ID, mockHttpRequest);
 
         inOrder.verify(mockService).getItems(USER_ID);
-        inOrder.verify(mockMapper).mapToDto(itemsCaptor.capture());
-        assertThat(itemsCaptor.getValue(), notNullValue());
-        assertThat(itemsCaptor.getValue().size(), equalTo(1));
-        assertThat(itemsCaptor.getValue().getFirst(), deepEqualTo(makeTestSavedItem()));
-        assertThat(actual, notNullValue());
-        assertThat(actual.size(), equalTo(1));
-        assertThat(actual.getFirst(), deepEqualTo(makeTestItemRetrieveDto()));
+        inOrder.verify(mockMapper).mapToDto(List.of(makeItemProxy()));
+        assertThat(actual, contains(makeItemRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "get_items.json", getClass());
     }
 
     @Test
     void testGetItemsWithText() throws JSONException, IOException {
-        when(mockService.getItems(SEARCH_TEXT, USER_ID)).thenReturn(List.of(makeTestSavedItem()));
-        when(mockMapper.mapToDto(anyList())).thenReturn(List.of(makeTestItemRetrieveDto()));
+        when(mockService.getItems(SEARCH_TEXT, USER_ID)).thenReturn(List.of(makeItemProxy()));
+        when(mockMapper.mapToDto(List.of(makeItemProxy()))).thenReturn(List.of(makeItemRetrieveDtoProxy()));
 
         final List<ItemRetrieveDto> actual = controller.getItems(USER_ID, SEARCH_TEXT, mockHttpRequest);
 
         inOrder.verify(mockService).getItems(SEARCH_TEXT, USER_ID);
-        inOrder.verify(mockMapper).mapToDto(itemsCaptor.capture());
-        assertThat(itemsCaptor.getValue(), notNullValue());
-        assertThat(itemsCaptor.getValue().size(), equalTo(1));
-        assertThat(itemsCaptor.getValue().getFirst(), deepEqualTo(makeTestSavedItem()));
-        assertThat(actual, notNullValue());
-        assertThat(actual.size(), equalTo(1));
-        assertThat(actual.getFirst(), deepEqualTo(makeTestItemRetrieveDto()));
+        inOrder.verify(mockMapper).mapToDto(List.of(makeItemProxy()));
+        assertThat(actual, contains(makeItemRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "get_items_with_text.json", getClass());
     }
 
     @Test
     void testAddComment() throws JSONException, IOException {
-        when(commentMapper.mapToComment(anyLong(), anyLong(), any(CommentCreateDto.class)))
-                .thenReturn(makeTestNewComment());
-        when(commentService.addComment(any(Comment.class))).thenReturn(makeTestSavedComment());
-        when(commentMapper.mapToDto(any(Comment.class))).thenReturn(makeTestCommentRetrieveDto());
+        when(commentMapper.mapToComment(USER_ID, ITEM_ID, makeCommentCreateDtoProxy())).thenReturn(makeCommentProxy());
+        when(commentService.addComment(makeCommentProxy())).thenReturn(makeCommentProxy());
+        when(commentMapper.mapToDto(makeCommentProxy())).thenReturn(makeCommentRetrieveDtoProxy());
 
-        final CommentRetrieveDto actual = controller.addComment(USER_ID, ITEM_ID, makeTestCommentCreateDto(),
+        final CommentRetrieveDto actual = controller.addComment(USER_ID, ITEM_ID, makeCommentCreateDtoProxy(),
                 mockHttpRequest);
 
-        inOrder.verify(commentMapper).mapToComment(userIdCaptor.capture(), itemIdCaptor.capture(),
-                commentCreateDtoCaptor.capture());
-        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
-        assertThat(itemIdCaptor.getValue(), equalTo(ITEM_ID));
-        assertThat(commentCreateDtoCaptor.getValue(), deepEqualTo(makeTestCommentCreateDto()));
-        inOrder.verify(commentService).addComment(commentCaptor.capture());
-        assertThat(commentCaptor.getValue(), deepEqualTo(makeTestNewComment()));
-        inOrder.verify(commentMapper).mapToDto(commentCaptor.capture());
-        assertThat(commentCaptor.getValue(), deepEqualTo(makeTestSavedComment()));
-        assertThat(actual, deepEqualTo(makeTestCommentRetrieveDto()));
+        inOrder.verify(commentMapper).mapToComment(USER_ID, ITEM_ID, makeCommentCreateDtoProxy());
+        inOrder.verify(commentService).addComment(makeCommentProxy());
+        inOrder.verify(commentMapper).mapToDto(makeCommentProxy());
+        assertThat(actual, equalTo(makeCommentRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "add_comment.json", getClass());
     }
 
     @Test
     void testUpdateItem() throws JSONException, IOException {
-        when(mockMapper.mapToItem(any(ItemUpdateDto.class))).thenReturn(makeTestNewItem());
-        when(mockService.updateItem(anyLong(), any(Item.class), anyLong())).thenReturn(makeTestSavedItem());
-        when(mockMapper.mapToDto(any(Item.class))).thenReturn(makeTestItemRetrieveDto());
+        when(mockMapper.mapToItem(makeItemUpdateDtoProxy())).thenReturn(makeItemProxy());
+        when(mockService.updateItem(ITEM_ID, makeItemProxy(), USER_ID)).thenReturn(makeItemProxy());
+        when(mockMapper.mapToDto(makeItemProxy())).thenReturn(makeItemRetrieveDtoProxy());
 
-        final ItemRetrieveDto actual = controller.updateItem(USER_ID, ITEM_ID, makeTestItemUpdateDto(),
+        final ItemRetrieveDto actual = controller.updateItem(USER_ID, ITEM_ID, makeItemUpdateDtoProxy(),
                 mockHttpRequest);
 
-        inOrder.verify(mockMapper).mapToItem(itemUpdateDtoCaptor.capture());
-        assertThat(itemUpdateDtoCaptor.getValue(), deepEqualTo(makeTestItemUpdateDto()));
-        inOrder.verify(mockService).updateItem(itemIdCaptor.capture(), itemCaptor.capture(), userIdCaptor.capture());
-        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
-        assertThat(itemIdCaptor.getValue(), equalTo(ITEM_ID));
-        assertThat(itemCaptor.getValue(), deepEqualTo(makeTestNewItem()));
-        inOrder.verify(mockMapper).mapToDto(itemCaptor.capture());
-        assertThat(itemCaptor.getValue(), deepEqualTo(makeTestSavedItem()));
-        assertThat(actual, deepEqualTo(makeTestItemRetrieveDto()));
+        inOrder.verify(mockMapper).mapToItem(makeItemUpdateDtoProxy());
+        inOrder.verify(mockService).updateItem(ITEM_ID, makeItemProxy(), USER_ID);
+        inOrder.verify(mockMapper).mapToDto(makeItemProxy());
+        assertThat(actual, equalTo(makeItemRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "update_item.json", getClass());
     }
 
