@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.user.UserUtils.assertUserEqual;
 import static ru.practicum.shareit.common.CommonUtils.makeTestNewUser;
 import static ru.practicum.shareit.common.CommonUtils.makeTestSavedUser;
-import static ru.practicum.shareit.user.UserUtils.makeTestUserPatch;
+import static ru.practicum.shareit.user.UserUtils.makeUserPatchProxy;
 
 class UserServiceImplTest {
 
@@ -142,7 +142,7 @@ class UserServiceImplTest {
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestUserPatch());
+        final User actual = service.patchUser(makeUserPatchProxy());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -155,12 +155,12 @@ class UserServiceImplTest {
     void testPatchUserWhenOnlyName() {
         final User existingUser = makeTestSavedUser();
         existingUser.setName(makeTestNewUser().getName());
-        final UserPatch patch = makeTestUserPatch();
+        final UserPatch patch = makeUserPatchProxy();
         patch.setEmail(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestUserPatch());
+        final User actual = service.patchUser(makeUserPatchProxy());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -173,12 +173,12 @@ class UserServiceImplTest {
     void testPatchUserWhenOnlyEmail() {
         final User existingUser = makeTestSavedUser();
         existingUser.setEmail(makeTestNewUser().getEmail());
-        final UserPatch patch = makeTestUserPatch();
+        final UserPatch patch = makeUserPatchProxy();
         patch.setName(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestUserPatch());
+        final User actual = service.patchUser(makeUserPatchProxy());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -189,13 +189,13 @@ class UserServiceImplTest {
 
     @Test
     void testPatchUserWhenNothingToPatch() {
-        final UserPatch patch = makeTestUserPatch();
+        final UserPatch patch = makeUserPatchProxy();
         patch.setName(null);
         patch.setEmail(null);
         when(mockRepository.findById(42L)).thenReturn(Optional.of(makeTestSavedUser()));
         when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
 
-        final User actual = service.patchUser(makeTestUserPatch());
+        final User actual = service.patchUser(makeUserPatchProxy());
 
         final InOrder inOrder = inOrder(mockRepository);
         inOrder.verify(mockRepository).findById(42L);
@@ -216,7 +216,7 @@ class UserServiceImplTest {
         when(mockRepository.findById(42L)).thenReturn(Optional.empty());
 
         final NotFoundException actual = assertThrows(NotFoundException.class,
-                () -> service.patchUser(makeTestUserPatch()));
+                () -> service.patchUser(makeUserPatchProxy()));
 
         verify(mockRepository).findById(42L);
         assertEquals("user", actual.getModelName());

@@ -4,8 +4,6 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,24 +14,18 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.common.CommonUtils.assertLogs;
-import static ru.practicum.shareit.common.CommonUtils.deepEqualTo;
-import static ru.practicum.shareit.user.UserUtils.deepEqualTo;
-import static ru.practicum.shareit.common.CommonUtils.makeTestNewUser;
-import static ru.practicum.shareit.common.CommonUtils.makeTestSavedUser;
-import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
-import static ru.practicum.shareit.user.UserUtils.makeTestUserPatch;
-import static ru.practicum.shareit.user.UserUtils.makeTestUserRetrieveDto;
-import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
+import static ru.practicum.shareit.user.UserUtils.makeUserCreateDtoProxy;
+import static ru.practicum.shareit.user.UserUtils.makeUserPatchProxy;
+import static ru.practicum.shareit.user.UserUtils.makeUserProxy;
+import static ru.practicum.shareit.user.UserUtils.makeUserRetrieveDtoProxy;
+import static ru.practicum.shareit.user.UserUtils.makeUserUpdateDtoProxy;
 
 class UserControllerTest extends AbstractControllerTest {
 
@@ -46,24 +38,6 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Mock
     private UserMapper mockMapper;
-
-    @Captor
-    private ArgumentCaptor<UserCreateDto> userCreateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<UserUpdateDto> userUpdateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<User> userCaptor;
-
-    @Captor
-    private ArgumentCaptor<List<User>> usersCaptor;
-
-    @Captor
-    private ArgumentCaptor<UserPatch> userPatchCaptor;
-
-    @Captor
-    private ArgumentCaptor<Long> userIdCaptor;
 
     private InOrder inOrder;
 
@@ -89,70 +63,57 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Test
     void testCreateUser() throws JSONException, IOException {
-        when(mockMapper.mapToUser(any(UserCreateDto.class))).thenReturn(makeTestNewUser());
-        when(mockService.createUser(any(User.class))).thenReturn(makeTestSavedUser());
-        when(mockMapper.mapToDto(any(User.class))).thenReturn(makeTestUserRetrieveDto());
+        when(mockMapper.mapToUser(makeUserCreateDtoProxy())).thenReturn(makeUserProxy());
+        when(mockService.createUser(makeUserProxy())).thenReturn(makeUserProxy());
+        when(mockMapper.mapToDto(makeUserProxy())).thenReturn(makeUserRetrieveDtoProxy());
 
-        final UserRetrieveDto actual = controller.createUser(makeTestUserCreateDto(), mockHttpRequest);
+        final UserRetrieveDto actual = controller.createUser(makeUserCreateDtoProxy(), mockHttpRequest);
 
-        inOrder.verify(mockMapper).mapToUser(userCreateDtoCaptor.capture());
-        assertThat(userCreateDtoCaptor.getValue(), deepEqualTo(makeTestUserCreateDto()));
-        inOrder.verify(mockService).createUser(userCaptor.capture());
-        assertThat(userCaptor.getValue(), deepEqualTo(makeTestNewUser()));
-        inOrder.verify(mockMapper).mapToDto(userCaptor.capture());
-        assertThat(userCaptor.getValue(), deepEqualTo(makeTestSavedUser()));
-        assertThat(actual, deepEqualTo(makeTestUserRetrieveDto()));
+        inOrder.verify(mockMapper).mapToUser(makeUserCreateDtoProxy());
+        inOrder.verify(mockService).createUser(makeUserProxy());
+        inOrder.verify(mockMapper).mapToDto(makeUserProxy());
+        assertThat(actual, equalTo(makeUserRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "create_user.json", getClass());
     }
 
     @Test
     void testGetUser() throws JSONException, IOException {
-        when(mockService.getUser(USER_ID)).thenReturn(makeTestSavedUser());
-        when(mockMapper.mapToDto(any(User.class))).thenReturn(makeTestUserRetrieveDto());
+        when(mockService.getUser(USER_ID)).thenReturn(makeUserProxy());
+        when(mockMapper.mapToDto(makeUserProxy())).thenReturn(makeUserRetrieveDtoProxy());
 
         final UserRetrieveDto actual = controller.getUser(USER_ID, mockHttpRequest);
 
         inOrder.verify(mockService).getUser(USER_ID);
-        inOrder.verify(mockMapper).mapToDto(userCaptor.capture());
-        assertThat(userCaptor.getValue(), deepEqualTo(makeTestSavedUser()));
-        assertThat(actual, deepEqualTo(makeTestUserRetrieveDto()));
+        inOrder.verify(mockMapper).mapToDto(makeUserProxy());
+        assertThat(actual, equalTo(makeUserRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "get_user.json", getClass());
     }
 
     @Test
     void testGetUsers() throws JSONException, IOException {
-        when(mockService.getAllUsers()).thenReturn(List.of(makeTestSavedUser()));
-        when(mockMapper.mapToDto(anyList())).thenReturn(List.of(makeTestUserRetrieveDto()));
+        when(mockService.getAllUsers()).thenReturn(List.of(makeUserProxy()));
+        when(mockMapper.mapToDto(List.of(makeUserProxy()))).thenReturn(List.of(makeUserRetrieveDtoProxy()));
 
         final List<UserRetrieveDto> actual = controller.getUsers(mockHttpRequest);
 
         inOrder.verify(mockService).getAllUsers();
-        inOrder.verify(mockMapper).mapToDto(usersCaptor.capture());
-        assertThat(usersCaptor.getValue(), notNullValue());
-        assertThat(usersCaptor.getValue().size(), equalTo(1));
-        assertThat(usersCaptor.getValue().getFirst(), deepEqualTo(makeTestSavedUser()));
-        assertThat(actual, notNullValue());
-        assertThat(actual.size(), equalTo(1));
-        assertThat(actual.getFirst(), deepEqualTo(makeTestUserRetrieveDto()));
+        inOrder.verify(mockMapper).mapToDto(List.of(makeUserProxy()));
+        assertThat(actual, contains(makeUserRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "get_users.json", getClass());
     }
 
     @Test
     void testPatchUser() throws JSONException, IOException {
-        when(mockMapper.mapToPatch(anyLong(), any(UserUpdateDto.class))).thenReturn(makeTestUserPatch());
-        when(mockService.patchUser(any(UserPatch.class))).thenReturn(makeTestSavedUser());
-        when(mockMapper.mapToDto(any(User.class))).thenReturn(makeTestUserRetrieveDto());
+        when(mockMapper.mapToPatch(USER_ID, makeUserUpdateDtoProxy())).thenReturn(makeUserPatchProxy());
+        when(mockService.patchUser(makeUserPatchProxy())).thenReturn(makeUserProxy());
+        when(mockMapper.mapToDto(makeUserProxy())).thenReturn(makeUserRetrieveDtoProxy());
 
-        final UserRetrieveDto actual = controller.patchUser(USER_ID, makeTestUserUpdateDto(), mockHttpRequest);
+        final UserRetrieveDto actual = controller.patchUser(USER_ID, makeUserUpdateDtoProxy(), mockHttpRequest);
 
-        inOrder.verify(mockMapper).mapToPatch(userIdCaptor.capture(), userUpdateDtoCaptor.capture());
-        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
-        assertThat(userUpdateDtoCaptor.getValue(), deepEqualTo(makeTestUserUpdateDto()));
-        inOrder.verify(mockService).patchUser(userPatchCaptor.capture());
-        assertThat(userPatchCaptor.getValue(), deepEqualTo(makeTestUserPatch()));
-        inOrder.verify(mockMapper).mapToDto(userCaptor.capture());
-        assertThat(userCaptor.getValue(), deepEqualTo(makeTestSavedUser()));
-        assertThat(actual, deepEqualTo(makeTestUserRetrieveDto()));
+        inOrder.verify(mockMapper).mapToPatch(USER_ID, makeUserUpdateDtoProxy());
+        inOrder.verify(mockService).patchUser(makeUserPatchProxy());
+        inOrder.verify(mockMapper).mapToDto(makeUserProxy());
+        assertThat(actual, equalTo(makeUserRetrieveDtoProxy()));
         assertLogs(logListener.getEvents(), "update_users.json", getClass());
     }
 
