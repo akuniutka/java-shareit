@@ -12,7 +12,7 @@ interface ItemRequestMapper {
     @Mapping(target = "requester.id", source = "userId")
     @Mapping(target = "created", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "items", expression = "java(new java.util.HashSet<>())")
-    ItemRequest mapToItemRequest(Long userId, ItemRequestCreateDto dot);
+    ItemRequest mapToItemRequest(Long userId, ItemRequestCreateDto dto);
 
     ItemRequestRetrieveDto mapToDto(ItemRequest itemRequest);
 
