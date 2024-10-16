@@ -52,10 +52,30 @@ public class UserMapperImplTest {
     }
 
     @Test
-    void testMapToPatchWhenNull() {
+    void testMapToPatchWhenUserIdNullAndDtoNull() {
         final UserPatch actual = mapper.mapToPatch(null, null);
 
         assertThat(actual, nullValue());
+    }
+
+    @Test
+    void testMapTpPatchWhenUserIdNull() {
+        final UserPatch expected = makeTestUserPatch();
+        expected.setUserId(null);
+
+        final UserPatch actual = mapper.mapToPatch(null, makeUserUpdateDtoProxy());
+
+        assertThat(expected, samePropertyValuesAs(actual));
+    }
+
+    @Test
+    void testMapToPatchWheDtoIsNull() {
+        final UserPatch expected = new UserPatch();
+        expected.setUserId(42L);
+
+        final UserPatch actual = mapper.mapToPatch(42L, null);
+
+        assertThat(expected, samePropertyValuesAs(actual));
     }
 
     @Test
