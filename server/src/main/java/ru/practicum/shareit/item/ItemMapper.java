@@ -26,7 +26,7 @@ interface ItemMapper {
     ItemBookingRetrieveDto mapToDto(Booking booking);
 
     default ItemRequest itemRequestFromItemRequestId(final ItemCreateDto dto) {
-        if (dto.getRequestId() == null) {
+        if (dto == null || dto.getRequestId() == null) {
             return null;
         }
         final ItemRequest itemRequest = new ItemRequest();

@@ -3,6 +3,8 @@ package ru.practicum.shareit.item;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
@@ -13,6 +15,35 @@ import java.util.Objects;
 final class ItemUtils {
 
     private ItemUtils() {
+    }
+
+    static Item makeTestItem() {
+        final Item item = new Item();
+        item.setId(null);
+        item.setOwner(new User());
+        item.getOwner().setId(42L);
+        item.setName("The thing");
+        item.setDescription("Something from out there");
+        item.setAvailable(false);
+        item.setLastBooking(null);
+        item.setNextBooking(null);
+        item.setComments(new HashSet<>());
+        item.setRequest(new ItemRequest());
+        item.getRequest().setId(7L);
+        return item;
+    }
+
+    static ItemRetrieveDto makeTestItemRetrieveDto() {
+        final ItemRetrieveDto dto = new ItemRetrieveDto();
+        dto.setId(13L);
+        dto.setName("The next big thing");
+        dto.setDescription("This thing is ever stranger");
+        dto.setAvailable(false);
+        dto.setRequestId(null);
+        dto.setLastBooking(null);
+        dto.setNextBooking(null);
+        dto.setComments(new HashSet<>());
+        return dto;
     }
 
     static Comment makeTestComment() {
@@ -33,6 +64,27 @@ final class ItemUtils {
         dto.setAuthorName("John Doe");
         dto.setText("This is the first comment");
         dto.setCreated(LocalDateTime.of(2001, Month.JANUARY, 1, 0, 0, 1));
+        return dto;
+    }
+
+    static Booking makeTestBooking() {
+        final Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setItem(new Item());
+        booking.getItem().setId(13L);
+        booking.getItem().setName("The thing");
+        booking.setBooker(new User());
+        booking.getBooker().setId(42L);
+        booking.setStart(LocalDateTime.of(2001, Month.JUNE, 1, 9, 10, 11));
+        booking.setEnd(LocalDateTime.of(2001, Month.JUNE, 30, 10, 11, 12));
+        booking.setStatus(null);
+        return booking;
+    }
+
+    static ItemBookingRetrieveDto makeTestItemBookingRetrieveDto() {
+        final ItemBookingRetrieveDto dto = new ItemBookingRetrieveDto();
+        dto.setId(1L);
+        dto.setBookerId(42L);
         return dto;
     }
 
@@ -69,7 +121,7 @@ final class ItemUtils {
         dto.setName("The thing");
         dto.setDescription("Something from out there");
         dto.setAvailable(false);
-        dto.setRequestId(42L);
+        dto.setRequestId(7L);
         return dto;
     }
 
@@ -121,6 +173,50 @@ final class ItemUtils {
                         && Objects.equals(expected.getAuthorName(), actual.getAuthorName())
                         && Objects.equals(expected.getText(), actual.getText())
                         && Objects.equals(expected.getCreated(), actual.getCreated());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
+    }
+
+    static Matcher<ItemRetrieveDto> samePropertyValuesAs(final ItemRetrieveDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final ItemRetrieveDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final ItemRetrieveDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getId(), actual.getId())
+                        && Objects.equals(expected.getName(), actual.getName())
+                        && Objects.equals(expected.getDescription(), actual.getDescription())
+                        && Objects.equals(expected.getAvailable(), actual.getAvailable())
+                        && Objects.equals(expected.getRequestId(), actual.getRequestId())
+                        && Objects.equals(expected.getLastBooking(), actual.getLastBooking())
+                        && Objects.equals(expected.getNextBooking(), actual.getNextBooking())
+                        && Objects.equals(expected.getComments(), actual.getComments());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
+    }
+
+    static Matcher<ItemBookingRetrieveDto> samePropertyValuesAs(final ItemBookingRetrieveDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final ItemBookingRetrieveDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final ItemBookingRetrieveDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getId(), actual.getId())
+                        && Objects.equals(expected.getBookerId(), actual.getBookerId());
             }
 
             @Override
