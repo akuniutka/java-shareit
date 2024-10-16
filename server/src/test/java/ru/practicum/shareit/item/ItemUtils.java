@@ -1,14 +1,39 @@
 package ru.practicum.shareit.item;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.HashSet;
+import java.util.Objects;
 
 final class ItemUtils {
 
     private ItemUtils() {
+    }
+
+    static Comment makeTestComment() {
+        final Comment comment = new Comment();
+        comment.setId(null);
+        comment.setItem(new Item());
+        comment.getItem().setId(13L);
+        comment.setAuthor(new User());
+        comment.getAuthor().setId(42L);
+        comment.setText("This is the first comment");
+        comment.setCreated(LocalDateTime.of(2001, Month.JANUARY, 1, 0, 0, 1));
+        return comment;
+    }
+
+    static CommentRetrieveDto makeTestCommentRetrieveDto() {
+        final CommentRetrieveDto dto = new CommentRetrieveDto();
+        dto.setId(1L);
+        dto.setAuthorName("John Doe");
+        dto.setText("This is the first comment");
+        dto.setCreated(LocalDateTime.of(2001, Month.JANUARY, 1, 0, 0, 1));
+        return dto;
     }
 
     static Item makeItemProxy() {
@@ -33,6 +58,7 @@ final class ItemUtils {
         comment.getItem().setId(13L);
         comment.setAuthor(new User());
         comment.getAuthor().setId(42L);
+        comment.getAuthor().setName("John Doe");
         comment.setText("This is the first comment");
         comment.setCreated(LocalDateTime.of(2001, Month.JANUARY, 1, 0, 0, 1));
         return comment;
@@ -81,5 +107,26 @@ final class ItemUtils {
         dto.setNextBooking(null);
         dto.setComments(new HashSet<>());
         return dto;
+    }
+
+    static Matcher<CommentRetrieveDto> samePropertyValuesAs(final CommentRetrieveDto dto) {
+        return new TypeSafeMatcher<>() {
+
+            private final CommentRetrieveDto expected = dto;
+
+            @Override
+            protected boolean matchesSafely(final CommentRetrieveDto actual) {
+                return Objects.nonNull(expected) && Objects.nonNull(actual)
+                        && Objects.equals(expected.getId(), actual.getId())
+                        && Objects.equals(expected.getAuthorName(), actual.getAuthorName())
+                        && Objects.equals(expected.getText(), actual.getText())
+                        && Objects.equals(expected.getCreated(), actual.getCreated());
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendValue(expected);
+            }
+        };
     }
 }
