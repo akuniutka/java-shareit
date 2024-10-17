@@ -103,8 +103,8 @@ final class ItemUtils {
         return item;
     }
 
-    static Comment makeCommentProxy() {
-        final Comment comment = new CommentProxy();
+    static CommentProxy makeCommentProxy() {
+        final CommentProxy comment = new CommentProxy();
         comment.setId(1L);
         comment.setItem(new Item());
         comment.getItem().setId(13L);

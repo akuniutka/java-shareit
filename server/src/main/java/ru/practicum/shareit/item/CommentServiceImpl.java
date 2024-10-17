@@ -32,8 +32,7 @@ class CommentServiceImpl implements CommentService {
             throw new ValidationException("item.id", "no complete bookings of item by user");
         }
         final Booking booking = bookings.getFirst();
-        comment.setItem(booking.getItem());
-        comment.setAuthor(booking.getBooker());
+        comment.getAuthor().setName(booking.getBooker().getName());
         final Comment createdComment = repository.save(comment);
         log.info("Created comment with id = {}: {}", createdComment.getId(), createdComment);
         return createdComment;

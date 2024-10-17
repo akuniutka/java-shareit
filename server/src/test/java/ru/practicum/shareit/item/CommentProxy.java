@@ -4,6 +4,16 @@ import java.util.Objects;
 
 class CommentProxy extends Comment {
 
+    CommentProxy withId(final Long id) {
+        super.setId(id);
+        return this;
+    }
+
+    CommentProxy withAuthorName(final String authorName) {
+        super.getAuthor().setName(authorName);
+        return this;
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -19,6 +29,8 @@ class CommentProxy extends Comment {
         return Objects.equals(this.getId(), other.getId())
                 && Objects.equals(this.getItem(), other.getItem())
                 && Objects.equals(this.getAuthor(), other.getAuthor())
+                && (Objects.isNull(this.getAuthor())
+                        || Objects.equals(this.getAuthor().getName(), other.getAuthor().getName()))
                 && Objects.equals(this.getText(), other.getText())
                 && Objects.equals(this.getCreated(), other.getCreated());
     }
