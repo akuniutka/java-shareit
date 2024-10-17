@@ -1,0 +1,10 @@
+[
+  {
+    "level": "ERROR",
+    "message": "Test message"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Internal Server Error', status=500, detail='Please contact site admin', instance='null', properties='null']"
+  }
+]

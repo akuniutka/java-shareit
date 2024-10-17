@@ -1,0 +1,10 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home?value=none: BookingCreateDto(itemId=13, start=2000-07-01T13:10:25, end=2000-07-31T12:50:55) (X-Sharer-User-Id: 42)"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: test response"
+  }
+]

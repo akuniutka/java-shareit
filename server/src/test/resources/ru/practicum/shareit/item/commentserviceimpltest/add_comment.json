@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Created comment with id = 1: Comment(id=1, text=This is the first comment, created=2001-01-01T00:00:01, item=13, author=42)"
+  }
+]

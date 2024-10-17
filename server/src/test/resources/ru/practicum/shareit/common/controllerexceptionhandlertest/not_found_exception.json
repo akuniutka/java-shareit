@@ -1,0 +1,10 @@
+[
+  {
+    "level": "WARN",
+    "message": "Model 'user' with id = 42 not found"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Not Found', status=404, detail='Check that id of user is correct (you sent 42)', instance='null', properties='null']"
+  }
+]

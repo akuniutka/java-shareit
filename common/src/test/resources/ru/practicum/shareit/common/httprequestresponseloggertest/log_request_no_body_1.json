@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home?value=none (X-Sharer-User-Id: 42)"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ItemRetrieveDto(id=13, name=The next big thing, description=This thing is ever stranger, available=false, requestId=null, lastBooking=null, nextBooking=null, comments=[])"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Check that id of booking is correct (you sent 1)",
+  "instance": "/bookings/1"
+}

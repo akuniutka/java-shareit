@@ -1,0 +1,10 @@
+[
+  {
+    "level": "WARN",
+    "message": "Model validation errors: {end=should be after start}"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Bad Request', status=400, detail='Check that data you sent is correct', instance='null', properties='{error={end=should be after start}}']"
+  }
+]

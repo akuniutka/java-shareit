@@ -1,0 +1,23 @@
+{
+  "id": 1,
+  "name": "The next big thing",
+  "description": "This thing is ever stranger",
+  "available": true,
+  "requestId": 42,
+  "lastBooking": {
+    "id": 6,
+    "bookerId": 5
+  },
+  "nextBooking": {
+    "id": 7,
+    "bookerId": 5
+  },
+  "comments": [
+    {
+      "id": 13,
+      "authorName": "Jack Sparrow",
+      "text": "The first comment",
+      "created": "2000-07-011T11:25:36.985969"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Forbidden",
+  "status": 403,
+  "detail": "You should owe items to get related bookings",
+  "instance": "/bookings/owner?state=all&from=0&size=10"
+}
