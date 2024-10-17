@@ -1,6 +1,7 @@
 package ru.practicum.shareit.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -56,7 +57,7 @@ public class ControllerExceptionHandler extends BaseExceptionHandler {
             final DataIntegrityViolationException exception,
             final HttpServletRequest request
     ) {
-        if (exception.getCause() instanceof org.hibernate.exception.ConstraintViolationException cause) {
+        if (exception.getCause() instanceof ConstraintViolationException cause) {
             return switch (cause.getConstraintName()) {
                 case "users_email_ux" -> {
                     log.warn(cause.getMessage());

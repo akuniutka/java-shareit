@@ -1,0 +1,10 @@
+[
+  {
+    "level": "WARN",
+    "message": "root message"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Conflict', status=409, detail='Email already exists', instance='null', properties='null']"
+  }
+]

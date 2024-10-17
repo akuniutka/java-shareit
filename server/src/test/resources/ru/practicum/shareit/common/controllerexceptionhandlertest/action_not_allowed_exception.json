@@ -1,0 +1,10 @@
+[
+  {
+    "level": "WARN",
+    "message": "not enough power"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: ProblemDetail[type='about:blank', title='Forbidden', status=403, detail='not enough power', instance='null', properties='null']"
+  }
+]
