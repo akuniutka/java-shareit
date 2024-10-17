@@ -18,6 +18,7 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -44,4 +45,10 @@ public class ItemRequest {
     @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<Item> items;
+
+    // To avoid circular reference in toString()
+    @ToString.Include
+    public Long requester() {
+        return Optional.ofNullable(requester).map(User::getId).orElse(null);
+    }
 }
