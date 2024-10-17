@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Created booking with id = 1: Booking(id=1, start=2001-06-01T09:10:11, end=2001-06-30T10:11:12, status=APPROVED, item=13, booker=42)"
+  }
+]

@@ -42,8 +42,8 @@ final class BookingUtils {
         return dto;
     }
 
-    static Booking makeBookingProxy() {
-        final Booking booking = new BookingProxy();
+    static BookingProxy makeBookingProxy() {
+        final BookingProxy booking = new BookingProxy();
         booking.setId(1L);
         booking.setItem(new Item());
         booking.getItem().setId(13L);

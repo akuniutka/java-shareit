@@ -4,6 +4,21 @@ import java.util.Objects;
 
 class BookingProxy extends Booking {
 
+    BookingProxy withId(final Long id) {
+        super.setId(id);
+        return this;
+    }
+
+    BookingProxy withItemName(final String itemName) {
+        super.getItem().setName(itemName);
+        return this;
+    }
+
+    BookingProxy withStatus(final BookingStatus status) {
+        super.setStatus(status);
+        return this;
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -18,6 +33,8 @@ class BookingProxy extends Booking {
         final BookingProxy other = (BookingProxy) obj;
         return Objects.equals(this.getId(), other.getId())
                 && Objects.equals(this.getItem(), other.getItem())
+                && (Objects.isNull(this.getItem())
+                        || Objects.equals(this.getItem().getName(), other.getItem().getName()))
                 && Objects.equals(this.getBooker(), other.getBooker())
                 && Objects.equals(this.getStart(), other.getStart())
                 && Objects.equals(this.getEnd(), other.getEnd())
