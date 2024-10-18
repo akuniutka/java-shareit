@@ -88,9 +88,9 @@ final class ItemUtils {
         return dto;
     }
 
-    static Item makeItemProxy() {
+    static Item makeNewItemProxy() {
         final Item item = new ItemProxy();
-        item.setId(13L);
+        item.setId(null);
         item.setOwner(new User());
         item.getOwner().setId(42L);
         item.setName("The next big thing");
@@ -100,6 +100,12 @@ final class ItemUtils {
         item.setNextBooking(null);
         item.setComments(new HashSet<>());
         item.setRequest(null);
+        return item;
+    }
+
+    static Item makeItemProxy() {
+        final Item item = makeNewItemProxy();
+        item.setId(13L);
         return item;
     }
 

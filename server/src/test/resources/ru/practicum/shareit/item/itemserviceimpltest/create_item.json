@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Created item with id = 13: Item(id=13, name=The next big thing, description=This thing is ever stranger, available=false, owner=42, lastBooking=null, nextBooking=null, request=null)"
+  }
+]
