@@ -5,6 +5,6 @@
   },
   {
     "level": "INFO",
-    "message": "Responded to POST http://somehost/home?value=none: [UserRetrieveDto(id=1, name=John Doe, email=john_doe@mail.com)]"
+    "message": "Responded to POST http://somehost/home?value=none: [UserRetrieveDto[id=42, name=John Doe, email=john_doe@mail.com]]"
   }
 ]

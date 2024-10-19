@@ -1,43 +1,43 @@
 package ru.practicum.shareit.user;
 
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.practicum.shareit.common.LogListener;
 import ru.practicum.shareit.common.exception.NotFoundException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ru.practicum.shareit.user.UserUtils.assertUserEqual;
-import static ru.practicum.shareit.common.CommonUtils.makeTestNewUser;
-import static ru.practicum.shareit.common.CommonUtils.makeTestSavedUser;
-import static ru.practicum.shareit.user.UserUtils.makeUserPatchProxy;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
+import static ru.practicum.shareit.common.CommonUtils.assertLogs;
+import static ru.practicum.shareit.user.UserUtils.deepEqualTo;
+import static ru.practicum.shareit.user.UserUtils.makeTestUser;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserPatch;
 
 class UserServiceImplTest {
+
+    private static final LogListener logListener = new LogListener(UserServiceImpl.class);
 
     private AutoCloseable openMocks;
 
     @Mock
     private UserRepository mockRepository;
 
-    @Captor
-    private ArgumentCaptor<User> userCaptured;
+    private InOrder inOrder;
 
     private UserService service;
 
@@ -45,63 +45,65 @@ class UserServiceImplTest {
     void setUp() {
         openMocks = MockitoAnnotations.openMocks(this);
         service = new UserServiceImpl(mockRepository);
+        logListener.startListen();
+        logListener.reset();
+        inOrder = Mockito.inOrder(mockRepository);
     }
 
     @AfterEach()
     void tearDown() throws Exception {
+        logListener.stopListen();
         Mockito.verifyNoMoreInteractions(mockRepository);
         openMocks.close();
     }
 
     @Test
-    void testCreateUser() {
-        when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
+    void testCreateUser() throws JSONException, IOException {
+        when(mockRepository.save(makeTestUser().withNoId())).thenReturn(makeTestUser());
 
-        final User actual = service.createUser(makeTestNewUser());
+        final User actual = service.createUser(makeTestUser().withNoId());
 
-        verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestNewUser(), userCaptured.getValue());
-        assertUserEqual(makeTestSavedUser(), actual);
+        verify(mockRepository).save(makeTestUser().withNoId());
+        assertThat(actual, deepEqualTo(makeTestUser()));
+        assertLogs(logListener.getEvents(), "create_user.json", getClass());
     }
 
     @Test
     void testCreateUserWhenUserIsNull() {
-        final NullPointerException actual = assertThrows(NullPointerException.class, () -> service.createUser(null));
+        final NullPointerException exception = assertThrows(NullPointerException.class, () -> service.createUser(null));
 
-        assertEquals("Cannot create user: is null", actual.getMessage());
+        assertThat(exception.getMessage(), equalTo("Cannot create user: is null"));
     }
 
     @Test
     void testGetUser() {
-        when(mockRepository.findById(1L)).thenReturn(Optional.of(makeTestSavedUser()));
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.of(makeTestUser()));
 
-        final User actual = service.getUser(1L);
+        final User actual = service.getUser(USER_ID);
 
-        verify(mockRepository).findById(1L);
-        assertUserEqual(makeTestSavedUser(), actual);
+        verify(mockRepository).findById(USER_ID);
+        assertThat(actual, deepEqualTo(makeTestUser()));
     }
 
     @Test
     void testGetUserWhenNotFound() {
-        when(mockRepository.findById(1L)).thenReturn(Optional.empty());
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        final NotFoundException actual = assertThrows(NotFoundException.class, () -> service.getUser(1L));
+        final NotFoundException exception = assertThrows(NotFoundException.class, () -> service.getUser(USER_ID));
 
-        verify(mockRepository).findById(1L);
-        assertEquals("user", actual.getModelName());
-        assertEquals(1L, actual.getModelId());
+        verify(mockRepository).findById(USER_ID);
+        assertThat(exception.getModelName(), equalTo("user"));
+        assertThat(exception.getModelId(), equalTo(USER_ID));
     }
 
     @Test
     void testGetAllUsers() {
-        when(mockRepository.findAll()).thenReturn(List.of(makeTestSavedUser()));
+        when(mockRepository.findAll()).thenReturn(List.of(makeTestUser()));
 
         final List<User> actual = service.getAllUsers();
 
         verify(mockRepository).findAll();
-        assertNotNull(actual);
-        assertEquals(1, actual.size());
-        assertUserEqual(makeTestSavedUser(), actual.getFirst());
+        assertThat(actual, contains(deepEqualTo(makeTestUser())));
     }
 
     @Test
@@ -111,133 +113,123 @@ class UserServiceImplTest {
         final List<User> actual = service.getAllUsers();
 
         verify(mockRepository).findAll();
-        assertNotNull(actual);
-        assertTrue(actual.isEmpty());
+        assertThat(actual, empty());
     }
 
     @Test
     void testExistsByIdWhenTrue() {
-        when(mockRepository.existsById(1L)).thenReturn(true);
+        when(mockRepository.existsById(USER_ID)).thenReturn(true);
 
-        final boolean actual = service.existsById(1L);
+        final boolean actual = service.existsById(USER_ID);
 
-        verify(mockRepository).existsById(1L);
-        assertTrue(actual);
+        verify(mockRepository).existsById(USER_ID);
+        assertThat(actual, equalTo(true));
     }
 
     @Test
     void testExistsByIdWhenFalse() {
-        when(mockRepository.existsById(1L)).thenReturn(false);
+        when(mockRepository.existsById(USER_ID)).thenReturn(false);
 
-        final boolean actual = service.existsById(1L);
+        final boolean actual = service.existsById(USER_ID);
 
-        verify(mockRepository).existsById(1L);
-        assertFalse(actual);
+        verify(mockRepository).existsById(USER_ID);
+        assertThat(actual, equalTo(false));
     }
 
     @Test
-    void testPatchUser() {
-        final User existingUser = makeTestNewUser();
-        existingUser.setId(42L);
-        when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
-        when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
+    void testPatchUser() throws JSONException, IOException {
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.of(makeTestUser().withNoName().withNoEmail()));
+        when(mockRepository.save(makeTestUser())).thenReturn(makeTestUser());
 
-        final User actual = service.patchUser(makeUserPatchProxy());
+        final User actual = service.patchUser(makeTestUserPatch());
 
-        final InOrder inOrder = inOrder(mockRepository);
-        inOrder.verify(mockRepository).findById(42L);
-        inOrder.verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestSavedUser(), userCaptured.getValue());
-        assertEquals(makeTestSavedUser(), actual);
+        inOrder.verify(mockRepository).findById(USER_ID);
+        inOrder.verify(mockRepository).save(makeTestUser());
+        assertThat(actual, deepEqualTo(makeTestUser()));
+        assertLogs(logListener.getEvents(), "patch_user.json", getClass());
     }
 
     @Test
-    void testPatchUserWhenOnlyName() {
-        final User existingUser = makeTestSavedUser();
-        existingUser.setName(makeTestNewUser().getName());
-        final UserPatch patch = makeUserPatchProxy();
+    void testPatchUserWhenOnlyName() throws JSONException, IOException {
+        final UserPatch patch = makeTestUserPatch();
         patch.setEmail(null);
-        when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
-        when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.of(makeTestUser().withNoName()));
+        when(mockRepository.save(makeTestUser())).thenReturn(makeTestUser());
 
-        final User actual = service.patchUser(makeUserPatchProxy());
+        final User actual = service.patchUser(patch);
 
-        final InOrder inOrder = inOrder(mockRepository);
-        inOrder.verify(mockRepository).findById(42L);
-        inOrder.verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestSavedUser(), userCaptured.getValue());
-        assertEquals(makeTestSavedUser(), actual);
+        inOrder.verify(mockRepository).findById(USER_ID);
+        inOrder.verify(mockRepository).save(makeTestUser());
+        assertThat(actual, deepEqualTo(makeTestUser()));
+        assertLogs(logListener.getEvents(), "patch_user_name.json", getClass());
     }
 
     @Test
-    void testPatchUserWhenOnlyEmail() {
-        final User existingUser = makeTestSavedUser();
-        existingUser.setEmail(makeTestNewUser().getEmail());
-        final UserPatch patch = makeUserPatchProxy();
+    void testPatchUserWhenOnlyEmail() throws JSONException, IOException {
+        final UserPatch patch = makeTestUserPatch();
         patch.setName(null);
-        when(mockRepository.findById(42L)).thenReturn(Optional.of(existingUser));
-        when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.of(makeTestUser().withNoEmail()));
+        when(mockRepository.save(makeTestUser())).thenReturn(makeTestUser());
 
-        final User actual = service.patchUser(makeUserPatchProxy());
+        final User actual = service.patchUser(patch);
 
-        final InOrder inOrder = inOrder(mockRepository);
-        inOrder.verify(mockRepository).findById(42L);
-        inOrder.verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestSavedUser(), userCaptured.getValue());
-        assertEquals(makeTestSavedUser(), actual);
+        inOrder.verify(mockRepository).findById(USER_ID);
+        inOrder.verify(mockRepository).save(makeTestUser());
+        assertThat(actual, deepEqualTo(makeTestUser()));
+        assertLogs(logListener.getEvents(), "patch_user_email.json", getClass());
     }
 
     @Test
-    void testPatchUserWhenNothingToPatch() {
-        final UserPatch patch = makeUserPatchProxy();
-        patch.setName(null);
-        patch.setEmail(null);
-        when(mockRepository.findById(42L)).thenReturn(Optional.of(makeTestSavedUser()));
-        when(mockRepository.save(any(User.class))).thenReturn(makeTestSavedUser());
+    void testPatchUserWhenNothingToPatch() throws JSONException, IOException {
+        final UserPatch patch = new UserPatch();
+        patch.setUserId(USER_ID);
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.of(makeTestUser()));
+        when(mockRepository.save(makeTestUser())).thenReturn(makeTestUser());
 
-        final User actual = service.patchUser(makeUserPatchProxy());
+        final User actual = service.patchUser(patch);
 
-        final InOrder inOrder = inOrder(mockRepository);
-        inOrder.verify(mockRepository).findById(42L);
-        inOrder.verify(mockRepository).save(userCaptured.capture());
-        assertUserEqual(makeTestSavedUser(), userCaptured.getValue());
-        assertEquals(makeTestSavedUser(), actual);
+        inOrder.verify(mockRepository).findById(USER_ID);
+        inOrder.verify(mockRepository).save(makeTestUser());
+        assertThat(actual, deepEqualTo(makeTestUser()));
+        assertLogs(logListener.getEvents(), "patch_user_nothing.json", getClass());
     }
 
     @Test
     void testPatchUserWhenPatchIsNull() {
-        final NullPointerException actual = assertThrows(NullPointerException.class, () -> service.patchUser(null));
+        final NullPointerException exception = assertThrows(NullPointerException.class, () -> service.patchUser(null));
 
-        assertEquals("Cannot patch user: is null", actual.getMessage());
+        assertThat(exception.getMessage(), equalTo("Cannot patch user: is null"));
     }
 
     @Test
     void testPatchUserWhenUserNotFound() {
-        when(mockRepository.findById(42L)).thenReturn(Optional.empty());
+        when(mockRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        final NotFoundException actual = assertThrows(NotFoundException.class,
-                () -> service.patchUser(makeUserPatchProxy()));
+        final NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> service.patchUser(makeTestUserPatch()));
 
-        verify(mockRepository).findById(42L);
-        assertEquals("user", actual.getModelName());
-        assertEquals(42L, actual.getModelId());
+        verify(mockRepository).findById(USER_ID);
+        assertThat(exception.getModelName(), equalTo("user"));
+        assertThat(exception.getModelId(), equalTo(USER_ID));
     }
 
     @Test
-    void testDeleteUser() {
-        when(mockRepository.delete(1L)).thenReturn(1);
+    void testDeleteUser() throws JSONException, IOException {
+        when(mockRepository.delete(USER_ID)).thenReturn(1);
 
-        assertDoesNotThrow(() -> service.deleteUser(1L));
+        service.deleteUser(USER_ID);
 
-        verify(mockRepository).delete(1L);
+        verify(mockRepository).delete(USER_ID);
+        assertLogs(logListener.getEvents(), "delete_user.json", getClass());
     }
 
     @Test
-    void testDeleteUserWhenUserNotFound() {
-        when(mockRepository.delete(1L)).thenReturn(0);
+    void testDeleteUserWhenUserNotFound() throws JSONException, IOException {
+        when(mockRepository.delete(USER_ID)).thenReturn(0);
 
-        assertDoesNotThrow(() -> service.deleteUser(1L));
+        service.deleteUser(USER_ID);
 
-        verify(mockRepository).delete(1L);
+        verify(mockRepository).delete(USER_ID);
+        assertLogs(logListener.getEvents(), "delete_user_not_found.json", getClass());
     }
 }

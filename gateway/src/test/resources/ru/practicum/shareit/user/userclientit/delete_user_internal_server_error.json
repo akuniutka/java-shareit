@@ -3,5 +3,5 @@
   "title": "Internal Server Error",
   "status": 500,
   "detail": "Please contact site admin",
-  "instance": "/users/1"
+  "instance": "/users/42"
 }

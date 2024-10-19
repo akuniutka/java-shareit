@@ -4,8 +4,6 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import ru.practicum.shareit.common.AbstractControllerTest;
@@ -15,13 +13,11 @@ import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.common.CommonUtils.assertLogs;
-import static ru.practicum.shareit.user.UserUtils.deepEqualTo;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
@@ -29,19 +25,8 @@ class UserControllerTest extends AbstractControllerTest {
 
     private static final LogListener logListener = new LogListener(UserController.class);
 
-    private static final long USER_ID = 1L;
-
     @Mock
     private UserClient client;
-
-    @Captor
-    private ArgumentCaptor<UserCreateDto> userCreateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<UserUpdateDto> userUpdateDtoCaptor;
-
-    @Captor
-    private ArgumentCaptor<Long> userIdCaptor;
 
     private UserController controller;
 
@@ -64,12 +49,11 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Test
     void testCreateUser() throws JSONException, IOException {
-        when(client.createUser(any(UserCreateDto.class))).thenReturn(testResponse);
+        when(client.createUser(makeTestUserCreateDto())).thenReturn(testResponse);
 
         final Object actual = controller.createUser(makeTestUserCreateDto(), mockHttpRequest);
 
-        verify(client).createUser(userCreateDtoCaptor.capture());
-        assertThat(userCreateDtoCaptor.getValue(), deepEqualTo(makeTestUserCreateDto()));
+        verify(client).createUser(makeTestUserCreateDto());
         assertThat(actual, equalTo(testResponse));
         assertLogs(logListener.getEvents(), "create_user.json", getClass());
     }
@@ -98,13 +82,11 @@ class UserControllerTest extends AbstractControllerTest {
 
     @Test
     void testUpdateUser() throws JSONException, IOException {
-        when(client.updateUser(anyLong(), any(UserUpdateDto.class))).thenReturn(testResponse);
+        when(client.updateUser(USER_ID, makeTestUserUpdateDto())).thenReturn(testResponse);
 
         final Object actual = controller.updateUser(USER_ID, makeTestUserUpdateDto(), mockHttpRequest);
 
-        verify(client).updateUser(userIdCaptor.capture(), userUpdateDtoCaptor.capture());
-        assertThat(userIdCaptor.getValue(), equalTo(USER_ID));
-        assertThat(userUpdateDtoCaptor.getValue(), deepEqualTo(makeTestUserUpdateDto()));
+        verify(client).updateUser(USER_ID, makeTestUserUpdateDto());
         assertThat(actual, equalTo(testResponse));
         assertLogs(logListener.getEvents(), "update_user.json", getClass());
     }

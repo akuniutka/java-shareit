@@ -3,5 +3,5 @@
   "title": "Conflict",
   "status": 409,
   "detail": "Email already exists",
-  "instance": "/users/1"
+  "instance": "/users/42"
 }

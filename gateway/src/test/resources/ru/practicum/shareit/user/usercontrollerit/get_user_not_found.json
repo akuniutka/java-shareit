@@ -3,5 +3,5 @@
   "title": "Not Found",
   "status": 404,
   "detail": "Check that id of user is correct (you sent 2)",
-  "instance": "/users/1"
+  "instance": "/users/42"
 }

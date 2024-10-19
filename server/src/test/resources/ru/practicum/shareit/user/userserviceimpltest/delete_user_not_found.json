@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "No user deleted: user with id = 42 does not exist"
+  }
+]

@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Updated user with id = 42: User(id=42, name=John Doe, email=john_doe@mail.com)"
+  }
+]

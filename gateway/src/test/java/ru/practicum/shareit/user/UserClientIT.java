@@ -17,6 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
 import static ru.practicum.shareit.common.EqualToJson.equalToJson;
 import static ru.practicum.shareit.common.ErrorResponseMatchers.isConflict;
@@ -27,8 +28,6 @@ import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
 @RestClientTest(UserClient.class)
 class UserClientIT extends AbstractClientIT {
-
-    private static final long USER_ID = 1L;
 
     @Autowired
     private ObjectMapper mapper;
@@ -71,7 +70,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testCreateUserWhenDuplicateEmail() throws IOException {
+    void testCreateUserWhen4xxError() throws IOException {
         final UserCreateDto dto = makeTestUserCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_duplicate_email.json", getClass());
@@ -87,7 +86,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testCreateUserWhenInternalServerError() throws IOException {
+    void testCreateUserWhen5xxError() throws IOException {
         final UserCreateDto dto = makeTestUserCreateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("create_user_internal_server_error.json", getClass());
@@ -116,7 +115,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testGetUserWhenNotFound() throws IOException {
+    void testGetUserWhen4xxError() throws IOException {
         final String body = loadJson("get_user_not_found.json", getClass());
         expectGet("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.NOT_FOUND)
@@ -130,7 +129,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testGetUserWhenInternalServerError() throws IOException {
+    void testGetUserWhen5xxError() throws IOException {
         final String body = loadJson("get_user_internal_server_error.json", getClass());
         expectGet("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -170,7 +169,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testGetUsersWhenInternalServerError() throws IOException {
+    void testGetUsersWhen5xxError() throws IOException {
         final String body = loadJson("get_users_internal_server_error.json", getClass());
         expectGet()
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -207,7 +206,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testUpdateUserWhenDuplicateEmail() throws IOException {
+    void testUpdateUserWhen4xxError() throws IOException {
         final UserUpdateDto dto = makeTestUserUpdateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_duplicate_email.json", getClass());
@@ -223,7 +222,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testUpdateUserWhenInternalServerError() throws IOException {
+    void testUpdateUserWhen5xxError() throws IOException {
         final UserUpdateDto dto = makeTestUserUpdateDto();
         final String dtoJson = mapper.writeValueAsString(dto);
         final String body = loadJson("update_user_internal_server_error.json", getClass());
@@ -247,7 +246,7 @@ class UserClientIT extends AbstractClientIT {
     }
 
     @Test
-    void testDeleteUserWhenInternalServerError() throws IOException {
+    void testDeleteUserWhen5xxError() throws IOException {
         final String body = loadJson("delete_user_internal_server_error.json", getClass());
         expectDelete("/" + USER_ID)
                 .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -255,7 +254,7 @@ class UserClientIT extends AbstractClientIT {
                         .body(body));
 
         final HttpStatusCodeException exception = assertThrows(HttpStatusCodeException.class,
-                () -> client.deleteUser(1L));
+                () -> client.deleteUser(USER_ID));
 
         assertThat(exception, isInternalServerError(body));
     }

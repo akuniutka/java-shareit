@@ -3,17 +3,18 @@ package ru.practicum.shareit.user;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Builder;
 
-@Data
-class UserCreateDto {
+@Builder(toBuilder = true)
+record UserCreateDto(
 
-    @NotBlank
-    @Size(max = 255)
-    private String name;
+        @NotBlank
+        @Size(max = 255)
+        String name,
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    private String email;
+        @NotBlank
+        @Email
+        @Size(max = 255)
+        String email) {
+
 }
