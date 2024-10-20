@@ -11,9 +11,10 @@ import java.util.List;
 
 public final class CommonUtils {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
     public static final long USER_ID = 42L;
+    public static final long REQUEST_ID = 7L;
+
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private CommonUtils() {
     }

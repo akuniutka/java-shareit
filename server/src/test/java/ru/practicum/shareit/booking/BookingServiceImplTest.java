@@ -33,14 +33,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.booking.BookingUtils.makeBookingProxy;
 import static ru.practicum.shareit.booking.BookingUtils.makeTestBooking;
+import static ru.practicum.shareit.common.CommonUtils.ANOTHER_USER_ID;
+import static ru.practicum.shareit.common.CommonUtils.ITEM_ID;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
 import static ru.practicum.shareit.common.CommonUtils.assertLogs;
 
 class BookingServiceImplTest {
 
     private static final LogListener logListener = new LogListener(BookingServiceImpl.class);
 
-    private static final long USER_ID = 42L;
-    private static final long ITEM_ID = 13L;
     private static final long BOOKING_ID = 1L;
     private static final int FROM = 0;
     private static final int SIZE = 10;
@@ -401,7 +402,7 @@ class BookingServiceImplTest {
     void testApplyBookingVerdictWhenNotItemOwner() {
         final Booking booking = makeBookingProxy().withStatus(BookingStatus.WAITING);
         booking.getItem().setOwner(new User());
-        booking.getItem().getOwner().setId(USER_ID + 1);
+        booking.getItem().getOwner().setId(ANOTHER_USER_ID);
         when(mockRepository.findByIdWithBookerAndItemOwner(BOOKING_ID)).thenReturn(Optional.of(booking));
         when(userService.existsById(USER_ID)).thenReturn(true);
 

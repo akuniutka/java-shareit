@@ -1,0 +1,10 @@
+[
+  {
+    "level": "INFO",
+    "message": "Received POST at http://somehost/home?value=none: RequestCreateDto[description=Need the thing] (X-Sharer-User-Id: 42)"
+  },
+  {
+    "level": "INFO",
+    "message": "Responded to POST http://somehost/home?value=none: RequestRetrieveDto[id=7, description=Need the thing, created=2001-01-01T00:00:01, items=[ItemRetrieveDto[id=13, ownerId=43, name=The next big thing, description=This thing is ever stranger, available=false, requestId=7]]]"
+  }
+]
