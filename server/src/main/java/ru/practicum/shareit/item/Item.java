@@ -18,7 +18,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class Item {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(name = "last_bookings",
-            joinColumns = @JoinColumn(name = "item_id",updatable = false, insertable = false),
+            joinColumns = @JoinColumn(name = "item_id", updatable = false, insertable = false),
             inverseJoinColumns = @JoinColumn(name = "booking_id", updatable = false, insertable = false))
     private Booking lastBooking;
 
@@ -66,7 +66,7 @@ public class Item {
     private Set<Comment> comments;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private ItemRequest request;
+    private Request request;
 
     // To avoid circular reference in toString()
     @ToString.Include
@@ -89,6 +89,6 @@ public class Item {
     // To avoid circular reference in toString()
     @ToString.Include
     public Long request() {
-        return Optional.ofNullable(request).map(ItemRequest::getId).orElse(null);
+        return Optional.ofNullable(request).map(Request::getId).orElse(null);
     }
 }

@@ -1,0 +1,6 @@
+[
+  {
+    "level": "INFO",
+    "message": "Created request with id = 7: Request(id=7, description=Need the thing, created=2001-01-01T00:00:01, requester=42)"
+  }
+]

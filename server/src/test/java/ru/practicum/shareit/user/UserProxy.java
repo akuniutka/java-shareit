@@ -4,6 +4,21 @@ import java.util.Objects;
 
 class UserProxy extends User {
 
+    UserProxy withNoId() {
+        super.setId(null);
+        return this;
+    }
+
+    UserProxy withNoName() {
+        super.setName(null);
+        return this;
+    }
+
+    UserProxy withNoEmail() {
+        super.setEmail(null);
+        return this;
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -12,10 +27,9 @@ class UserProxy extends User {
         if (obj == null) {
             return false;
         }
-        if (this.getClass() != obj.getClass()) {
+        if (!(obj instanceof User other)) {
             return false;
         }
-        final UserProxy other = (UserProxy) obj;
         return Objects.equals(this.getId(), other.getId())
                 && Objects.equals(this.getName(), other.getName())
                 && Objects.equals(this.getEmail(), other.getEmail());

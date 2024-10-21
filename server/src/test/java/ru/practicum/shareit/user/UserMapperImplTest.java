@@ -7,15 +7,15 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
+import static ru.practicum.shareit.user.UserUtils.deepEqualTo;
 import static ru.practicum.shareit.user.UserUtils.makeTestUser;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserPatch;
 import static ru.practicum.shareit.user.UserUtils.makeTestUserRetrieveDto;
-import static ru.practicum.shareit.user.UserUtils.makeUserCreateDtoProxy;
-import static ru.practicum.shareit.user.UserUtils.makeUserProxy;
-import static ru.practicum.shareit.user.UserUtils.makeUserUpdateDtoProxy;
-import static ru.practicum.shareit.user.UserUtils.samePropertyValuesAs;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
 public class UserMapperImplTest {
 
@@ -28,11 +28,9 @@ public class UserMapperImplTest {
 
     @Test
     void testMapToUser() {
-        final User expected = makeTestUser();
+        final User actual = mapper.mapToUser(makeTestUserCreateDto());
 
-        final User actual = mapper.mapToUser(makeUserCreateDtoProxy());
-
-        assertThat(actual, samePropertyValuesAs(expected));
+        assertThat(actual, deepEqualTo(makeTestUser().withNoId()));
     }
 
     @Test
@@ -44,11 +42,9 @@ public class UserMapperImplTest {
 
     @Test
     void testMapToPatch() {
-        final UserPatch expected = makeTestUserPatch();
+        final UserPatch actual = mapper.mapToPatch(USER_ID, makeTestUserUpdateDto());
 
-        final UserPatch actual = mapper.mapToPatch(expected.getUserId(), makeUserUpdateDtoProxy());
-
-        assertThat(expected, samePropertyValuesAs(actual));
+        assertThat(actual, equalTo(makeTestUserPatch()));
     }
 
     @Test
@@ -59,32 +55,30 @@ public class UserMapperImplTest {
     }
 
     @Test
-    void testMapTpPatchWhenUserIdNull() {
+    void testMapToPatchWhenUserIdNull() {
         final UserPatch expected = makeTestUserPatch();
         expected.setUserId(null);
 
-        final UserPatch actual = mapper.mapToPatch(null, makeUserUpdateDtoProxy());
+        final UserPatch actual = mapper.mapToPatch(null, makeTestUserUpdateDto());
 
-        assertThat(expected, samePropertyValuesAs(actual));
+        assertThat(actual, equalTo(expected));
     }
 
     @Test
     void testMapToPatchWheDtoIsNull() {
         final UserPatch expected = new UserPatch();
-        expected.setUserId(42L);
+        expected.setUserId(USER_ID);
 
-        final UserPatch actual = mapper.mapToPatch(42L, null);
+        final UserPatch actual = mapper.mapToPatch(USER_ID, null);
 
-        assertThat(expected, samePropertyValuesAs(actual));
+        assertThat(actual, equalTo(expected));
     }
 
     @Test
     void testMapToDtoWhenSingleUser() {
-        final UserRetrieveDto expected = makeTestUserRetrieveDto();
+        final UserRetrieveDto actual = mapper.mapToDto(makeTestUser());
 
-        final UserRetrieveDto actual = mapper.mapToDto(makeUserProxy());
-
-        assertThat(actual, samePropertyValuesAs(expected));
+        assertThat(actual, equalTo(makeTestUserRetrieveDto()));
     }
 
     @Test
@@ -96,11 +90,9 @@ public class UserMapperImplTest {
 
     @Test
     void testMapToDtoWhenUserList() {
-        final UserRetrieveDto expected = makeTestUserRetrieveDto();
+        final List<UserRetrieveDto> actual = mapper.mapToDto(List.of(makeTestUser()));
 
-        final List<UserRetrieveDto> actual = mapper.mapToDto(List.of(makeUserProxy()));
-
-        assertThat(actual, contains(samePropertyValuesAs(expected)));
+        assertThat(actual, contains(makeTestUserRetrieveDto()));
     }
 
     @Test

@@ -28,7 +28,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.common.CommonUtils.USER_ID;
 import static ru.practicum.shareit.common.CommonUtils.loadJson;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserCreateDto;
+import static ru.practicum.shareit.user.UserUtils.makeTestUserUpdateDto;
 
 @WebMvcTest(controllers = UserController.class)
 class UserControllerIT {
@@ -45,20 +48,12 @@ class UserControllerIT {
     @Autowired
     private MockMvc mvc;
 
-    private UserCreateDto userCreateDto;
-    private UserUpdateDto userUpdateDto;
     private String baseUrl;
 
     @BeforeEach
     void setUp() {
         Mockito.reset(client);
         baseUrl = serverUrl + "/users";
-        userCreateDto = new UserCreateDto();
-        userCreateDto.setName("John Doe");
-        userCreateDto.setEmail("john_doe@mail.com");
-        userUpdateDto = new UserUpdateDto();
-        userUpdateDto.setName("John Doe");
-        userUpdateDto.setEmail("john_doe@mail.com");
     }
 
     @AfterEach
@@ -69,51 +64,53 @@ class UserControllerIT {
     @Test
     void testCreateUser() throws Exception {
         final String body = loadJson("create_user.json", getClass());
-        when(client.createUser(userCreateDto)).thenReturn(mapper.readValue(body, Object.class));
+        when(client.createUser(makeTestUserCreateDto())).thenReturn(mapper.readValue(body, Object.class));
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userCreateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserCreateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
                         content().json(body, true));
 
-        verify(client).createUser(userCreateDto);
+        verify(client).createUser(makeTestUserCreateDto());
     }
 
     @Test
     void testCreateUserWhenDuplicateEmail() throws Exception {
         final String body = loadJson("create_user_duplicate_email.json", getClass());
-        when(client.createUser(userCreateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
+        when(client.createUser(makeTestUserCreateDto())).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userCreateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserCreateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isConflict(),
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
                         content().json(body, true));
 
-        verify(client).createUser(userCreateDto);
+        verify(client).createUser(makeTestUserCreateDto());
     }
 
     @Test
     void testCreateUserWhenNoEmail() throws Exception {
-        userCreateDto.setEmail(null);
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .email(null)
+                .build();
         final String body = loadJson("create_user_no_email.json", getClass());
 
         mvc.perform(post(baseUrl)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userCreateDto)))
+                        .content(mapper.writeValueAsString(dto)))
                 .andDo(print())
                 .andExpectAll(
                         status().isBadRequest(),
@@ -124,9 +121,9 @@ class UserControllerIT {
     @Test
     void testGetUser() throws Exception {
         final String body = loadJson("get_user.json", getClass());
-        when(client.getUser(1L)).thenReturn(mapper.readValue(body, Object.class));
+        when(client.getUser(USER_ID)).thenReturn(mapper.readValue(body, Object.class));
 
-        mvc.perform(get(baseUrl + "/1")
+        mvc.perform(get(baseUrl + "/" + USER_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpectAll(
@@ -134,15 +131,15 @@ class UserControllerIT {
                         content().contentType(MediaType.APPLICATION_JSON),
                         content().json(body, true));
 
-        verify(client).getUser(1L);
+        verify(client).getUser(USER_ID);
     }
 
     @Test
     void testGetUserWhenNotFound() throws Exception {
         final String body = loadJson("get_user_not_found.json", getClass());
-        when(client.getUser(1L)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
+        when(client.getUser(USER_ID)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
-        mvc.perform(get(baseUrl + "/1")
+        mvc.perform(get(baseUrl + "/" + USER_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpectAll(
@@ -150,7 +147,7 @@ class UserControllerIT {
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
                         content().json(body, true));
 
-        verify(client).getUser(1L);
+        verify(client).getUser(USER_ID);
     }
 
     @Test
@@ -201,32 +198,34 @@ class UserControllerIT {
     @Test
     void testUpdateUser() throws Exception {
         final String body = loadJson("update_user.json", getClass());
-        when(client.updateUser(1L, userUpdateDto)).thenReturn(mapper.readValue(body, Object.class));
+        when(client.updateUser(USER_ID, makeTestUserUpdateDto())).thenReturn(mapper.readValue(body, Object.class));
 
-        mvc.perform(patch(baseUrl + "/1")
+        mvc.perform(patch(baseUrl + "/" + USER_ID)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userUpdateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserUpdateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(MediaType.APPLICATION_JSON),
                         content().json(body, true));
 
-        verify(client).updateUser(1L, userUpdateDto);
+        verify(client).updateUser(USER_ID, makeTestUserUpdateDto());
     }
 
     @Test
     void testUpdateUserWhenMalformedEmail() throws Exception {
-        userUpdateDto.setEmail("malformed_email");
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .email("malformed_email")
+                .build();
         final String body = loadJson("update_user_malformed_email.json", getClass());
 
-        mvc.perform(patch(baseUrl + "/1")
+        mvc.perform(patch(baseUrl + "/" + USER_ID)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userUpdateDto)))
+                        .content(mapper.writeValueAsString(dto)))
                 .andDo(print())
                 .andExpectAll(
                         status().isBadRequest(),
@@ -237,39 +236,39 @@ class UserControllerIT {
     @Test
     void testUpdateUserWhenNotFound() throws Exception {
         final String body = loadJson("update_user_not_found.json", getClass());
-        when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
+        when(client.updateUser(USER_ID, makeTestUserUpdateDto())).thenThrow(makeException(HttpStatus.NOT_FOUND, body));
 
-        mvc.perform(patch(baseUrl + "/1")
+        mvc.perform(patch(baseUrl + "/" + USER_ID)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userUpdateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserUpdateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isNotFound(),
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
                         content().json(body, true));
 
-        verify(client).updateUser(1L, userUpdateDto);
+        verify(client).updateUser(USER_ID, makeTestUserUpdateDto());
     }
 
     @Test
     void testUpdateUserWhenDuplicateEmail() throws Exception {
         final String body = loadJson("update_user_duplicate_email.json", getClass());
-        when(client.updateUser(1L, userUpdateDto)).thenThrow(makeException(HttpStatus.CONFLICT, body));
+        when(client.updateUser(USER_ID, makeTestUserUpdateDto())).thenThrow(makeException(HttpStatus.CONFLICT, body));
 
-        mvc.perform(patch(baseUrl + "/1")
+        mvc.perform(patch(baseUrl + "/" + USER_ID)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userUpdateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserUpdateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isConflict(),
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
                         content().json(body, true));
 
-        verify(client).updateUser(1L, userUpdateDto);
+        verify(client).updateUser(USER_ID, makeTestUserUpdateDto());
     }
 
     @Test
@@ -280,7 +279,7 @@ class UserControllerIT {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(userUpdateDto)))
+                        .content(mapper.writeValueAsString(makeTestUserUpdateDto())))
                 .andDo(print())
                 .andExpectAll(
                         status().isInternalServerError(),
@@ -290,14 +289,14 @@ class UserControllerIT {
 
     @Test
     void testDeleteUser() throws Exception {
-        doNothing().when(client).deleteUser(1L);
+        doNothing().when(client).deleteUser(USER_ID);
 
-        mvc.perform(delete(baseUrl + "/1")
+        mvc.perform(delete(baseUrl + "/" + USER_ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(client).deleteUser(1L);
+        verify(client).deleteUser(USER_ID);
     }
 
     @Test

@@ -24,8 +24,9 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldViolateConstraintWhenNameLengthExceeds255() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
-        dto.setName("a".repeat(256));
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .name("a".repeat(256))
+                .build();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
@@ -34,8 +35,9 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldViolateConstraintWhenEmailMalformed() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
-        dto.setEmail("not_an_email");
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .email("not_an_email")
+                .build();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
@@ -44,9 +46,10 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldViolateConstraintWhenEmailLengthExceed255() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
         final String longEmail = "a".repeat(64) + "@" + "a".repeat(63) + "." + "a".repeat(63) + "." + "a".repeat(63);
-        dto.setEmail(longEmail);
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .email(longEmail)
+                .build();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
@@ -55,7 +58,7 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldNotViolateConstraintWhenCorrectUserUpdateDto() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
+        final UserUpdateDto dto = makeTestUserUpdateDto();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
@@ -64,8 +67,9 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldNotViolateConstraintWhenNameLengthIs255() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
-        dto.setName("a".repeat(255));
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .name("a".repeat(255))
+                .build();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
@@ -74,19 +78,20 @@ class UserUpdateDtoTest {
 
     @Test
     void shouldNotViolateConstraintWhenEmailLengthIs255() {
-        final UserUpdateDto dto = getRandomUserUpdateDto();
         final String longEmail = "a".repeat(63) + "@" + "a".repeat(63) + "." + "a".repeat(63) + "." + "a".repeat(63);
-        dto.setEmail(longEmail);
+        final UserUpdateDto dto = makeTestUserUpdateDto().toBuilder()
+                .email(longEmail)
+                .build();
 
         final Set<ConstraintViolation<UserUpdateDto>> violations = validator.validate(dto);
 
         assertTrue(violations.isEmpty());
     }
 
-    private UserUpdateDto getRandomUserUpdateDto() {
-        final UserUpdateDto dto = new UserUpdateDto();
-        dto.setName("John Doe");
-        dto.setEmail("john_doe@mail.com");
-        return dto;
+    private UserUpdateDto makeTestUserUpdateDto() {
+        return UserUpdateDto.builder()
+                .name("John Doe")
+                .email("john_doe@mail.com")
+                .build();
     }
 }

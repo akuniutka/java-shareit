@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.common.exception.ActionNotAllowedException;
 import ru.practicum.shareit.common.exception.NotFoundException;
-import ru.practicum.shareit.request.ItemRequestService;
+import ru.practicum.shareit.request.RequestService;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
@@ -24,7 +24,7 @@ class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
     private final UserService userService;
-    private final ItemRequestService itemRequestService;
+    private final RequestService requestService;
 
     @Override
     @Transactional
@@ -32,7 +32,7 @@ class ItemServiceImpl implements ItemService {
         Objects.requireNonNull(item, "Cannot create item: is null");
         userService.getUser(item.getOwner().getId());
         if (item.getRequest() != null) {
-            itemRequestService.getItemRequest(item.getRequest().getId());
+            requestService.getRequest(item.getRequest().getId());
         }
         final Item createdItem = repository.save(item);
         log.info("Created item with id = {}: {}", createdItem.getId(), createdItem);
@@ -76,7 +76,7 @@ class ItemServiceImpl implements ItemService {
     @Transactional
     public Item updateItem(final long id, final Item update, final long userId) {
         Objects.requireNonNull(update, "Cannot update item: is null");
-        final Item item = repository.findByIdWithRelations(id).orElseThrow(
+        final Item item = repository.findById(id).orElseThrow(
                 () -> new NotFoundException(Item.class, id)
         );
         if (!Objects.equals(item.getOwner().getId(), userId)) {
@@ -93,7 +93,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public void deleteItem(final long id, final long userId) {
-        repository.findByIdWithRelations(id)
+        repository.findById(id)
                 .filter(item -> !Objects.equals(item.getOwner().getId(), userId))
                 .ifPresent(item -> {
                     throw new ActionNotAllowedException("Only owner can delete item");

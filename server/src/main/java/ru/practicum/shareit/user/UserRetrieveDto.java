@@ -1,13 +1,12 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 
-@Data
-@EqualsAndHashCode(of = {"id"})
-class UserRetrieveDto {
+@Builder(toBuilder = true)
+record UserRetrieveDto(
 
-    private Long id;
-    private String name;
-    private String email;
+        Long id,
+        String name,
+        String email) {
+
 }

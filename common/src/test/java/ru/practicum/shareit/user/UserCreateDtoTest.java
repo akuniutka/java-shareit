@@ -29,8 +29,9 @@ class UserCreateDtoTest {
     @NullAndEmptySource
     @ValueSource(strings = " ")
     void shouldViolateConstraintWhenNameNullOrBlank(final String name) {
-        final UserCreateDto dto = getRandomUserCreateDto();
-        dto.setName(name);
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .name(name)
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
@@ -39,8 +40,9 @@ class UserCreateDtoTest {
 
     @Test
     void shouldViolateConstraintWhenNameLengthExceeds255() {
-        final UserCreateDto dto = getRandomUserCreateDto();
-        dto.setName("a".repeat(256));
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .name("a".repeat(256))
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
@@ -51,8 +53,9 @@ class UserCreateDtoTest {
     @NullAndEmptySource
     @ValueSource(strings = {" ", "not_an_email"})
     void shouldViolateConstraintWhenEmailNullOrBlankOrMalformed(final String email) {
-        final UserCreateDto dto = getRandomUserCreateDto();
-        dto.setEmail(email);
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .email(email)
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
@@ -61,9 +64,10 @@ class UserCreateDtoTest {
 
     @Test
     void shouldViolateConstraintWhenEmailLengthExceed255() {
-        final UserCreateDto dto = getRandomUserCreateDto();
         final String longEmail = "a".repeat(64) + "@" + "a".repeat(63) + "." + "a".repeat(63) + "." + "a".repeat(63);
-        dto.setEmail(longEmail);
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .email(longEmail)
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
@@ -72,40 +76,40 @@ class UserCreateDtoTest {
 
     @Test
     void shouldNotViolateConstraintWhenCorrectUserCreateDto() {
-        final UserCreateDto dto = getRandomUserCreateDto();
+        final UserCreateDto dto = makeTestUserCreateDto();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
         assertTrue(violations.isEmpty());
     }
-
 
     @Test
     void shouldNotViolateConstraintWhenNameLengthIs255() {
-        final UserCreateDto dto = getRandomUserCreateDto();
-        dto.setName("a".repeat(255));
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .name("a".repeat(255))
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
         assertTrue(violations.isEmpty());
     }
-
 
     @Test
     void shouldNotViolateConstraintWhenEmailLengthIs255() {
-        final UserCreateDto dto = getRandomUserCreateDto();
         final String longEmail = "a".repeat(63) + "@" + "a".repeat(63) + "." + "a".repeat(63) + "." + "a".repeat(63);
-        dto.setEmail(longEmail);
+        final UserCreateDto dto = makeTestUserCreateDto().toBuilder()
+                .email(longEmail)
+                .build();
 
         final Set<ConstraintViolation<UserCreateDto>> violations = validator.validate(dto);
 
         assertTrue(violations.isEmpty());
     }
 
-    private UserCreateDto getRandomUserCreateDto() {
-        final UserCreateDto dto = new UserCreateDto();
-        dto.setName("John Doe");
-        dto.setEmail("john_doe@mail.com");
-        return dto;
+    private UserCreateDto makeTestUserCreateDto() {
+        return UserCreateDto.builder()
+                .name("John Doe")
+                .email("john_doe@mail.com")
+                .build();
     }
 }

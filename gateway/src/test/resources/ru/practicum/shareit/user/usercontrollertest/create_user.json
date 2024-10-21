@@ -1,7 +1,7 @@
 [
   {
     "level": "INFO",
-    "message": "Received POST at http://somehost/home?value=none: UserCreateDto(name=John Doe, email=john_doe@mail.com) (X-Sharer-User-Id: 42)"
+    "message": "Received POST at http://somehost/home?value=none: UserCreateDto[name=John Doe, email=john_doe@mail.com] (X-Sharer-User-Id: 42)"
   },
   {
     "level": "INFO",

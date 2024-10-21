@@ -4,7 +4,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ final class ItemUtils {
         item.setLastBooking(null);
         item.setNextBooking(null);
         item.setComments(new HashSet<>());
-        item.setRequest(new ItemRequest());
+        item.setRequest(new Request());
         item.getRequest().setId(7L);
         return item;
     }
@@ -88,9 +88,9 @@ final class ItemUtils {
         return dto;
     }
 
-    static Item makeItemProxy() {
+    static Item makeNewItemProxy() {
         final Item item = new ItemProxy();
-        item.setId(13L);
+        item.setId(null);
         item.setOwner(new User());
         item.getOwner().setId(42L);
         item.setName("The next big thing");
@@ -100,6 +100,12 @@ final class ItemUtils {
         item.setNextBooking(null);
         item.setComments(new HashSet<>());
         item.setRequest(null);
+        return item;
+    }
+
+    static Item makeItemProxy() {
+        final Item item = makeNewItemProxy();
+        item.setId(13L);
         return item;
     }
 

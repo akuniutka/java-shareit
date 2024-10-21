@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.core.io.ClassPathResource;
-import ru.practicum.shareit.user.User;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,25 +11,14 @@ import java.util.List;
 
 public final class CommonUtils {
 
+    public static final long USER_ID = 42L;
+    public static final long ANOTHER_USER_ID = 43L;
+    public static final long ITEM_ID = 13L;
+    public static final long REQUEST_ID = 7L;
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private CommonUtils() {
-    }
-
-    public static User makeTestNewUser() {
-        final User user = new User();
-        user.setId(null);
-        user.setName("John Doe");
-        user.setEmail("john_doe@mail.com");
-        return user;
-    }
-
-    public static User makeTestSavedUser() {
-        final User user = new User();
-        user.setId(42L);
-        user.setName("Mr Nobody");
-        user.setEmail("nobody@nowhere.com");
-        return user;
     }
 
     public static String loadJson(final String filename, final Class<?> clazz) throws IOException {

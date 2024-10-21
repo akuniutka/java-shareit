@@ -3,7 +3,7 @@
   "title": "Bad Request",
   "status": 400,
   "detail": "Check that data you sent is correct",
-  "instance": "/users/1",
+  "instance": "/users/42",
   "error": {
     "email": "must be a well-formed email address"
   }

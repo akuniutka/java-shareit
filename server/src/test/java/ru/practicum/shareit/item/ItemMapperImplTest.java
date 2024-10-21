@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.Request;
 
 import java.util.List;
 
@@ -118,7 +118,7 @@ class ItemMapperImplTest {
         final ItemRetrieveDto expected = makeTestItemRetrieveDto();
         expected.setRequestId(7L);
         final Item item = makeItemProxy();
-        item.setRequest(new ItemRequest());
+        item.setRequest(new Request());
         item.getRequest().setId(7L);
 
         final ItemRetrieveDto actual = mapper.mapToDto(item);
